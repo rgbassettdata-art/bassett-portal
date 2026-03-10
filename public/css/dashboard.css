@@ -1,0 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --navy:      #000066;
+    --orange:    #E8780F;
+    --green:     #25764A;
+    --off-white: #F6F4EF;
+    --dark:      #111;
+    --mid:       #5a5a6a;
+    --border:    rgba(0, 0, 102, 0.12);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Jost', sans-serif;
+    background-color: var(--off-white);
+    min-height: 100vh;
+}
+
+/* ─────────────────────────────────────────
+   Header
+───────────────────────────────────────── */
+.dash-header {
+    background: var(--navy);
+    border-bottom: 3px solid var(--orange);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dash-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    text-decoration: none;
+}
+
+.dash-brand-eyebrow {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--orange);
+}
+
+.dash-brand-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.03em;
+}
+
+.dash-logout button {
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.28);
+    color: rgba(255, 255, 255, 0.75);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.45rem 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.dash-logout button:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+/* ─────────────────────────────────────────
+   Main content
+───────────────────────────────────────── */
+.dash-main {
+    max-width: 900px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem 3rem;
+    animation: pageIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.dash-greeting {
+    margin-bottom: 2rem;
+}
+
+.dash-greeting h1 {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.dash-greeting p {
+    color: var(--mid);
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+}
+
+/* ─────────────────────────────────────────
+   Grid
+───────────────────────────────────────── */
+.dash-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+/* ─────────────────────────────────────────
+   Cards
+───────────────────────────────────────── */
+.dash-card {
+    background: #fff;
+    border-top: 3px solid var(--navy);
+    padding: 1.5rem 1.75rem;
+}
+
+.dash-card h2 {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 1.1rem;
+}
+
+/* ── Holiday stat ── */
+.holiday-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#days-left {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--orange);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.holiday-sublabel {
+    font-size: 0.8rem;
+    color: var(--mid);
+    margin-top: 0.5rem;
+}
+
+/* ── Links ── */
+#links ul {
+    list-style: none;
+}
+
+#links li a {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0;
+    color: var(--dark);
+    text-decoration: none;
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.15s, padding-left 0.18s;
+}
+
+#links li:last-child a {
+    border-bottom: none;
+}
+
+#links li a::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: var(--orange);
+    flex-shrink: 0;
+    transition: transform 0.15s;
+}
+
+#links li a:hover {
+    color: var(--navy);
+    padding-left: 0.4rem;
+}
+
+#links li a:hover::before {
+    transform: scale(1.6);
+}
+
+/* ─────────────────────────────────────────
+   Admin zone (superuser only, injected by JS)
+───────────────────────────────────────── */
+#admin-zone {
+    margin-top: 1.5rem;
+    grid-column: 1 / -1;
+}
+
+#admin-zone a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--navy);
+    text-decoration: none;
+    padding: 0.6rem 1.25rem;
+    border: 1.5px solid var(--navy);
+    transition: background 0.2s, color 0.2s;
+}
+
+#admin-zone a:hover {
+    background: var(--navy);
+    color: #fff;
+}
+
+/* ─────────────────────────────────────────
+   Responsive
+───────────────────────────────────────── */
+@media (max-width: 580px) {
+    .dash-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-header {
+        padding: 0 1rem;
+    }
+
+    .dash-main {
+        margin-top: 1.5rem;
+    }
+}

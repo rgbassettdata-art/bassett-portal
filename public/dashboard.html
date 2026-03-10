@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard — RG Bassett &amp; Sons</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+
+    <header class="dash-header">
+        <a href="/dashboard.html" class="dash-brand">
+            <span class="dash-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
+            <span class="dash-brand-name">Employee Portal</span>
+        </a>
+        <div class="dash-logout">
+            <form method="POST" action="/logout">
+                <button type="submit">Sign Out</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="dash-main">
+        <div class="dash-greeting">
+            <h1>Dashboard</h1>
+            <p>Welcome back. Here's your summary for today.</p>
+        </div>
+
+        <div class="dash-grid">
+
+            <section id="holidays" class="dash-card">
+                <h2>Annual Leave</h2>
+                <div class="holiday-stat">
+                    <span id="days-left">—</span>
+                    <span class="holiday-sublabel">days remaining</span>
+                </div>
+            </section>
+
+            <section id="links" class="dash-card">
+                <h2>Useful Links</h2>
+                <ul>
+                    <li><a href="#">Company Handbook</a></li>
+                    <li><a href="#">Benefits Portal</a></li>
+                    <li><a href="#">IT Support</a></li>
+                    <li><a href="#">Training Calendar</a></li>
+                </ul>
+            </section>
+
+            <div id="admin-zone"></div>
+
+        </div>
+    </main>
+
+    <script src="/js/dashboard.js"></script>
+    <script>
+        fetch('/session')
+            .then(r => r.json())
+            .then(user => {
+                if (user.role === 'superuser') {
+                    const zone = document.getElementById('admin-zone');
+                    zone.innerHTML = '<a href="/add_user.html">+ Add User</a>';
+                }
+            })
+            .catch(() => {});
+    </script>
+</body>
+</html>

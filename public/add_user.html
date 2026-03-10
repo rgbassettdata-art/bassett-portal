@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add User — RG Bassett &amp; Sons</title>
+    <link rel="stylesheet" href="/css/login.css" />
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-brand">
+            <span class="login-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
+            <h1>Create New User</h1>
+        </div>
+
+        <form method="POST" action="/user">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="off" required />
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" required />
+
+            <label for="role">Role</label>
+            <select id="role" name="role">
+                <option value="user">User</option>
+                <option value="superuser">Superuser</option>
+            </select>
+
+            <button type="submit">Create User</button>
+        </form>
+
+        <p id="message"></p>
+        <a href="/dashboard.html" class="login-back">&larr; Back to dashboard</a>
+    </div>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const msg = params.get('msg');
+        if (msg) {
+            document.getElementById('message').textContent = decodeURIComponent(msg);
+        }
+    </script>
+</body>
+</html>
