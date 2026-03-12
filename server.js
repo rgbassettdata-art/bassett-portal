@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,7 +45,8 @@ db.exec(`
     department       TEXT,
     clockNumber      TEXT,
     workDays         TEXT DEFAULT '[1,2,3,4,5]',
-    holidayYear      INTEGER
+    holidayYear      INTEGER,
+    email            TEXT
   );
 
   CREATE TABLE IF NOT EXISTS holiday_requests (
@@ -231,6 +233,9 @@ function migrateFromJSON() {
 
 migrateFromJSON();
 
+// Add email column to existing databases that pre-date this field
+try { db.exec('ALTER TABLE users ADD COLUMN email TEXT'); } catch (_) { /* already exists */ }
+
 // ── Data helpers ──────────────────────────────────────────────────────────────
 
 function rowToUser(u) {
@@ -245,8 +250,8 @@ function saveUsers(users) {
   db.transaction(() => {
     db.prepare('DELETE FROM users').run();
     const ins = db.prepare(`INSERT INTO users
-      (username,password,role,totalHolidays,nextYearHolidays,carriedOver,manager,approver,adminAccess,colour,department,clockNumber,workDays,holidayYear)
-      VALUES (@username,@password,@role,@totalHolidays,@nextYearHolidays,@carriedOver,@manager,@approver,@adminAccess,@colour,@department,@clockNumber,@workDays,@holidayYear)`);
+      (username,password,role,totalHolidays,nextYearHolidays,carriedOver,manager,approver,adminAccess,colour,department,clockNumber,workDays,holidayYear,email)
+      VALUES (@username,@password,@role,@totalHolidays,@nextYearHolidays,@carriedOver,@manager,@approver,@adminAccess,@colour,@department,@clockNumber,@workDays,@holidayYear,@email)`);
     for (const u of users) {
       ins.run({
         username:         u.username,
@@ -263,6 +268,7 @@ function saveUsers(users) {
         clockNumber:      u.clockNumber      ?? null,
         workDays:         JSON.stringify(u.workDays ?? [1,2,3,4,5]),
         holidayYear:      u.holidayYear      ?? null,
+        email:            u.email            ?? null,
       });
     }
   })();
@@ -481,6 +487,77 @@ function processYearEnd(user, allReqs, currentYear) {
   if (changed) saveUsers(allUsers);
 })();
 
+// ── Email notifications ───────────────────────────────────────────────────────
+
+const SMTP_CONFIG = {
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // TLS via STARTTLS on port 587
+  auth: {
+    user: process.env.SMTP_USER || 'rgbassettdata@gmail.com',
+    pass: process.env.SMTP_PASS || 'yseblqjbqlnkjlhr',
+  },
+};
+
+const mailer = nodemailer.createTransport(SMTP_CONFIG);
+console.log(`Email configured: ${SMTP_CONFIG.auth.user} via ${SMTP_CONFIG.host}`);
+
+const EMAIL_FOOTER = `
+<hr style="border:none;border-top:1px solid #ccc;margin:24px 0">
+<table style="font-size:11px;color:#555;font-family:Arial,sans-serif;max-width:600px">
+  <tr><td>
+    <strong style="color:#cc0000">R G Bassett &amp; Sons Ltd</strong><br>
+    Transport House, Tittensor, Stoke on Trent,<br>
+    Staffordshire ST12 9HD, England.<br><br>
+    T +44 (0)1782 372251 (Switchboard)<br>
+    E <a href="mailto:palletforce@bassett-group.co.uk">palletforce@bassett-group.co.uk</a><br>
+    W <a href="http://www.bassett-group.co.uk">www.bassett-group.co.uk</a>
+    <br><br>
+    <p style="margin:0 0 8px">All goods are transported by our Company in accordance with Road Haulage Association (RHA) Conditions of Carriage 2009, and stored under United Kingdom Warehousing Association (UKWA) Conditions of Contract 2006, copies of which are available upon request. Our standard payment terms for Account Customers are 30 Days End of Month. All invoice queries should be notified in writing to <a href="mailto:queries@bassett-group.co.uk">queries@bassett-group.co.uk</a> within 14 days of the date of invoice.</p>
+    <p style="margin:0 0 8px">This e-mail may contain confidential or legally privileged information, and is intended for the person to whom it is addressed. Any views or opinions expressed are solely those of the author, and do not necessarily represent those of R G Bassett &amp; Sons Ltd. If you are not the named addressee you must not use, copy, distribute or disclose such information, nor take any action in reliance on it. If you have received this message in error, please contact the sender immediately by return e-mail or telephone +44 (0)1782 372251.</p>
+    <p style="margin:0 0 8px">R G Bassett &amp; Sons Ltd has taken every reasonable precaution to ensure that any attachment to this e-mail has been checked for viruses. However, we cannot accept liability for any damage sustained as a result of software viruses and would advise that you carry out your own virus check prior to opening any attachment.</p>
+    <p style="margin:0 0 8px">R G Bassett &amp; Sons Ltd. Registered in England No 2269632. Registered Office: SJ Bargh Group Ltd, Caton Road, Lancaster LA1 3PE</p>
+    <p style="margin:0;color:#cc0000;font-style:italic">Please consider the environment and don&apos;t print this e-mail unless you must.</p>
+  </td></tr>
+</table>`;
+
+function fmtEmailDate(iso) {
+  if (!iso) return '—';
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const [y, m, d] = iso.split('-');
+  return `${parseInt(d, 10)} ${months[parseInt(m, 10) - 1]} ${y}`;
+}
+
+function buildCalendarLink(username, startDate, endDate, subject) {
+  // Outlook uses exclusive end date for all-day events, so add 1 day
+  const end = new Date(endDate + 'T12:00:00Z');
+  end.setUTCDate(end.getUTCDate() + 1);
+  const calEnd = end.toISOString().slice(0, 10);
+  const params = new URLSearchParams({
+    subject,
+    startdt: startDate + 'T00:00:00',
+    enddt:   calEnd    + 'T00:00:00',
+    body:    `Holiday leave for ${username}: ${fmtEmailDate(startDate)} – ${fmtEmailDate(endDate)}`,
+    allday:  'true',
+  });
+  return `https://outlook.office.com/calendar/0/deeplink/compose?${params}`;
+}
+
+async function sendEmail(to, subject, html) {
+  if (!to) return;
+  try {
+    await mailer.sendMail({
+      from:    `"RG Bassett & Sons" <${SMTP_CONFIG.auth.user}>`,
+      to,
+      subject,
+      html:    html + EMAIL_FOOTER,
+    });
+    console.log(`Email sent to ${to}: ${subject}`);
+  } catch (e) {
+    console.error('Email send failed:', e.message);
+  }
+}
+
 // ── Auth middleware ───────────────────────────────────────────────────────────
 
 function dashboardForRole(role) {
@@ -558,7 +635,7 @@ app.post('/user', ensureAdminAccess, async (req, res) => {
 
 app.patch('/user/:username', ensureAdminAccess, (req, res) => {
   const { username } = req.params;
-  const { totalHolidays, nextYearHolidays, carriedOver, manager, approver, adminAccess, colour, department, clockNumber, workDays } = req.body;
+  const { totalHolidays, nextYearHolidays, carriedOver, manager, approver, adminAccess, colour, department, clockNumber, workDays, email } = req.body;
   const users = loadUsers();
   const idx = users.findIndex((u) => u.username === username);
   if (idx === -1) return res.status(404).json({ error: 'User not found' });
@@ -572,6 +649,7 @@ app.patch('/user/:username', ensureAdminAccess, (req, res) => {
   if (department    !== undefined) users[idx].department    = department || null;
   if (clockNumber   !== undefined) users[idx].clockNumber   = clockNumber || null;
   if (workDays      !== undefined) users[idx].workDays      = Array.isArray(workDays) ? workDays : [];
+  if (email         !== undefined) users[idx].email         = email || null;
   saveUsers(users);
   res.json({ success: true });
 });
@@ -630,6 +708,29 @@ app.post('/holiday-request', ensureLoggedIn, (req, res) => {
     requestedAt: new Date().toISOString(),
   });
   saveRequests(reqs);
+
+  // Notify the manager/approver of the new request
+  const submittedUser = allUsers.find((u) => u.username === forUsername);
+  const notifyUsername = submittedUser?.manager || submittedUser?.approver;
+  if (notifyUsername) {
+    const notifyUser = allUsers.find((u) => u.username === notifyUsername);
+    if (notifyUser?.email) {
+      const calLink = buildCalendarLink(forUsername, startDate, endDate, `Holiday Request – ${forUsername}`);
+      const html = `
+        <h2 style="margin:0 0 16px;color:#333;font-family:Arial,sans-serif">New Holiday Request</h2>
+        <p style="font-family:Arial,sans-serif;color:#444"><strong>${forUsername}</strong> has submitted a holiday request requiring your approval.</p>
+        <table style="border-collapse:collapse;font-size:14px;font-family:Arial,sans-serif;margin:16px 0">
+          <tr><td style="padding:4px 16px 4px 0;color:#777">Employee:</td><td><strong>${forUsername}</strong></td></tr>
+          <tr><td style="padding:4px 16px 4px 0;color:#777">From:</td><td>${fmtEmailDate(startDate)}</td></tr>
+          <tr><td style="padding:4px 16px 4px 0;color:#777">To:</td><td>${fmtEmailDate(endDate)}</td></tr>
+          <tr><td style="padding:4px 16px 4px 0;color:#777">Working days:</td><td>${days}</td></tr>
+        </table>
+        <a href="${calLink}" style="display:inline-block;background:#0078d4;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;font-family:Arial,sans-serif;font-size:14px">&#128197; Add to Microsoft Calendar</a>
+        <p style="font-family:Arial,sans-serif;font-size:13px;color:#777;margin-top:16px">Please log in to the dashboard to approve or decline this request.</p>`;
+      sendEmail(notifyUser.email, `Holiday Request – ${forUsername}`, html);
+    }
+  }
+
   res.json({ success: true });
 });
 
@@ -685,6 +786,48 @@ app.patch('/holiday-request/:id', ensureManager, (req, res) => {
   reqs[idx].decidedBy = req.session.user.username;
   reqs[idx].decidedAt = new Date().toISOString();
   saveRequests(reqs);
+
+  // Send notification emails
+  const reqData      = reqs[idx];
+  const allUsersNow  = loadUsers();
+  const requester    = allUsersNow.find((u) => u.username === reqData.username);
+  const deciderUser  = allUsersNow.find((u) => u.username === req.session.user.username);
+  const statusWord   = status === 'approved' ? 'Approved' : 'Declined';
+  const statusColour = status === 'approved' ? '#25764A'  : '#c0392b';
+  const calLink      = buildCalendarLink(reqData.username, reqData.startDate, reqData.endDate, `Holiday – ${reqData.username}`);
+  const calBtn       = status === 'approved'
+    ? `<br><a href="${calLink}" style="display:inline-block;background:#0078d4;color:#fff;padding:10px 20px;text-decoration:none;border-radius:4px;font-family:Arial,sans-serif;font-size:14px">&#128197; Add to Microsoft Calendar</a>`
+    : '';
+
+  // Email to requester
+  if (requester?.email) {
+    const html = `
+      <h2 style="margin:0 0 16px;color:${statusColour};font-family:Arial,sans-serif">Holiday Request ${statusWord}</h2>
+      <p style="font-family:Arial,sans-serif;color:#444">Your holiday request has been <strong style="color:${statusColour}">${statusWord.toLowerCase()}</strong> by ${req.session.user.username}.</p>
+      <table style="border-collapse:collapse;font-size:14px;font-family:Arial,sans-serif;margin:16px 0">
+        <tr><td style="padding:4px 16px 4px 0;color:#777">From:</td><td>${fmtEmailDate(reqData.startDate)}</td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#777">To:</td><td>${fmtEmailDate(reqData.endDate)}</td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#777">Working days:</td><td>${reqData.days}</td></tr>
+      </table>
+      ${calBtn}`;
+    sendEmail(requester.email, `Holiday Request ${statusWord}`, html);
+  }
+
+  // Confirmation email to the person who decided
+  if (deciderUser?.email) {
+    const html = `
+      <h2 style="margin:0 0 16px;color:#333;font-family:Arial,sans-serif">Holiday Request ${statusWord}</h2>
+      <p style="font-family:Arial,sans-serif;color:#444">You have <strong style="color:${statusColour}">${statusWord.toLowerCase()}</strong> the holiday request for <strong>${reqData.username}</strong>.</p>
+      <table style="border-collapse:collapse;font-size:14px;font-family:Arial,sans-serif;margin:16px 0">
+        <tr><td style="padding:4px 16px 4px 0;color:#777">Employee:</td><td><strong>${reqData.username}</strong></td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#777">From:</td><td>${fmtEmailDate(reqData.startDate)}</td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#777">To:</td><td>${fmtEmailDate(reqData.endDate)}</td></tr>
+        <tr><td style="padding:4px 16px 4px 0;color:#777">Working days:</td><td>${reqData.days}</td></tr>
+      </table>
+      ${calBtn}`;
+    sendEmail(deciderUser.email, `Holiday Request ${statusWord} – ${reqData.username}`, html);
+  }
+
   res.json({ success: true });
 });
 
@@ -804,6 +947,7 @@ app.get('/admin/users', ensureAdminAccess, (_req, res) => {
     department:       u.department  ?? null,
     clockNumber:      u.clockNumber ?? null,
     workDays:         u.workDays    ?? [1,2,3,4,5],
+    email:            u.email       ?? null,
   }));
   res.json(safe);
 });

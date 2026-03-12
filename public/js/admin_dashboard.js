@@ -23,7 +23,7 @@
         tbody.innerHTML = '';
 
         if (allUsers.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="12" class="admin-loading">No users found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="13" class="admin-loading">No users found.</td></tr>';
             return;
         }
 
@@ -54,6 +54,17 @@
                 tdClock.textContent = '—';
                 tdClock.style.color = 'var(--mid)';
             }
+
+            // email address
+            const tdEmail = document.createElement('td');
+            const emailInp = document.createElement('input');
+            emailInp.type = 'email';
+            emailInp.value = u.email || '';
+            emailInp.placeholder = 'email@example.com';
+            emailInp.dataset.field = 'email';
+            emailInp.style.cssText = 'width:180px;font-family:inherit;font-size:0.85rem;color:var(--dark);background:var(--off-white);border:1.5px solid var(--border);padding:0.3rem 0.5rem;outline:none;';
+            emailInp.addEventListener('input', () => markDirty(tr));
+            tdEmail.appendChild(emailInp);
 
             // department (employees and managers only)
             const DEPARTMENTS = ['Driver - Artic','Driver - Rigid','Night Drivers','Bargh Drivers','Warehouse','Training','Admin','Salaried Staff','Finance','Workshop','Workshop Admin'];
@@ -245,6 +256,7 @@
             tr.appendChild(tdName);
             tr.appendChild(tdRole);
             tr.appendChild(tdClock);
+            tr.appendChild(tdEmail);
             tr.appendChild(tdDept);
             tr.appendChild(tdColour);
             tr.appendChild(tdManager);
@@ -271,6 +283,9 @@
 
         const clockInp = tr.querySelector('[data-field="clockNumber"]');
         if (clockInp) payload.clockNumber = clockInp.value.trim() || null;
+
+        const emailInp = tr.querySelector('[data-field="email"]');
+        if (emailInp) payload.email = emailInp.value.trim() || null;
 
         const deptSel = tr.querySelector('[data-field="department"]');
         if (deptSel) payload.department = deptSel.value;
