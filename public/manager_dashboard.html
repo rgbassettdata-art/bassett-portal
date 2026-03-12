@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard — RG Bassett &amp; Sons</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/manager_dashboard.css">
+    <link rel="stylesheet" href="/css/holiday_matrix.css">
+    <link rel="stylesheet" href="/css/news_panel.css">
+</head>
+<body>
+
+    <header class="dash-header mgr-header">
+        <a href="/manager_dashboard.html" class="dash-brand">
+            <img src="/logo.png" alt="RG Bassett & Sons" class="dash-brand-logo" />
+            <span class="dash-brand-text">
+                <span class="dash-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
+                <span class="dash-brand-name">Manager View</span>
+            </span>
+        </a>
+
+        <div class="dash-header-actions">
+            <a href="/admin_dashboard.html" class="dash-admin-link" id="admin-panel-link" style="display:none">Admin Panel</a>
+            <div class="dash-links-wrap" id="links-dropdown-wrap">
+                <button class="dash-links-btn" id="links-btn">Quick Links</button>
+                <div class="dash-links-menu">
+                    <a href="/phone_list.html">Internal Phone List</a>
+                    <a href="#">Team Rota</a>
+                    <a href="#">Performance Reviews</a>
+                    <a href="#">Reports</a>
+                </div>
+            </div>
+            <div class="dash-logout">
+                <form method="POST" action="/logout">
+                    <button type="submit">Sign Out</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main class="dash-main mgr-main">
+        <div class="dash-greeting mgr-greeting-row">
+            <div>
+                <h1>Manager Dashboard</h1>
+                <p id="mgr-greeting">Welcome back.</p>
+            </div>
+            <div id="team-stats" class="mgr-stat-row">
+                <div class="mgr-stat">
+                    <span class="mgr-stat-value" id="stat-headcount">—</span>
+                    <span class="mgr-stat-label">Headcount</span>
+                </div>
+                <div class="mgr-stat">
+                    <span class="mgr-stat-value" id="stat-on-leave">—</span>
+                    <span class="mgr-stat-label">On Leave Today</span>
+                </div>
+                <div class="mgr-stat">
+                    <span class="mgr-stat-value" id="stat-open-requests">—</span>
+                    <span class="mgr-stat-label">Pending Requests</span>
+                </div>
+                <div class="mgr-stat-divider"></div>
+                <div class="mgr-stat">
+                    <span class="mgr-stat-value" id="mgr-days-left">—</span>
+                    <span class="mgr-stat-label">My Days Left</span>
+                    <span id="mgr-this-year-detail" class="mgr-stat-detail"></span>
+                </div>
+                <div class="mgr-stat">
+                    <span class="mgr-stat-value" id="mgr-next-year-booked">—</span>
+                    <span class="mgr-stat-label">My Next Yr Booked</span>
+                    <span id="mgr-next-year-detail" class="mgr-stat-detail"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mgr-layout">
+
+            <!-- Book holiday + My Requests side by side -->
+            <div class="mgr-row-half">
+                <section class="dash-card" id="book-holiday-card">
+                    <h2>Book Holiday</h2>
+                    <div class="req-form-row mgr-book-form">
+                        <div class="req-field mgr-book-field-for">
+                            <label for="book-for">For</label>
+                            <select id="book-for" class="mgr-book-select"></select>
+                        </div>
+                        <div class="req-field">
+                            <label for="book-start">From</label>
+                            <input type="date" id="book-start" class="mgr-book-date" />
+                        </div>
+                        <div class="req-field">
+                            <label for="book-end">To</label>
+                            <input type="date" id="book-end" class="mgr-book-date" />
+                        </div>
+                        <div class="req-field mgr-book-action">
+                            <label>&nbsp;</label>
+                            <button id="book-submit" class="req-submit">Book Holiday</button>
+                        </div>
+                    </div>
+                    <p id="book-msg" class="req-msg"></p>
+                </section>
+
+                <section class="dash-card" id="my-requests-card">
+                    <h2>My Holiday Requests</h2>
+                    <table class="mgr-table" id="my-requests-table">
+                        <thead>
+                            <tr>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="my-requests-body">
+                            <tr><td colspan="5" class="mgr-table-empty">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+
+            <!-- Log Absence + Absence Records side by side -->
+            <div class="mgr-row-half">
+                <section class="dash-card" id="log-absence-card">
+                    <h2>Log Absence</h2>
+                    <div class="req-form-row mgr-book-form" style="flex-wrap:wrap;gap:0.75rem;">
+                        <div class="req-field mgr-book-field-for">
+                            <label for="absence-for">Employee</label>
+                            <select id="absence-for" class="mgr-book-select"></select>
+                        </div>
+                        <div class="req-field">
+                            <label for="absence-start">From</label>
+                            <input type="date" id="absence-start" class="mgr-book-date" />
+                        </div>
+                        <div class="req-field">
+                            <label for="absence-end">To</label>
+                            <input type="date" id="absence-end" class="mgr-book-date" />
+                        </div>
+                        <div class="req-field" style="flex:1;min-width:160px;">
+                            <label for="absence-reason">Reason (visible to managers only)</label>
+                            <input type="text" id="absence-reason" class="mgr-book-date" placeholder="e.g. Sick leave" style="width:100%;" />
+                        </div>
+                        <div class="req-field mgr-book-action">
+                            <label>&nbsp;</label>
+                            <button id="absence-submit" class="req-submit">Log Absence</button>
+                        </div>
+                    </div>
+                    <p id="absence-msg" class="req-msg"></p>
+                </section>
+
+                <section class="dash-card" id="absences-card">
+                    <h2>Absence Records</h2>
+                    <table class="mgr-table" id="absences-table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Reason</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="absences-body">
+                            <tr><td colspan="5" class="mgr-table-empty">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+
+            <!-- Pending leave requests — full width -->
+            <section class="dash-card" id="leave-requests-card">
+                <h2>Leave Requests</h2>
+                <table class="mgr-table" id="leave-requests-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leave-requests-body">
+                        <tr><td colspan="6" class="mgr-table-empty">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Team members — full width -->
+            <section class="dash-card">
+                <h2>Team Members</h2>
+                <table class="mgr-table" id="team-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Role</th>
+                            <th>Department</th>
+                            <th>This Year Allow.</th>
+                            <th>This Year Taken</th>
+                            <th>This Year Left</th>
+                            <th>Next Year Allow.</th>
+                            <th>Next Year Booked</th>
+                        </tr>
+                    </thead>
+                    <tbody id="team-table-body">
+                        <tr><td colspan="8" class="mgr-table-empty">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </div>
+    </main>
+
+    <section id="holiday-matrix-section" class="hm-section"></section>
+
+    <section class="year-calendar-section">
+        <div class="year-calendar-header">
+            <button class="cal-year-btn" id="cal-prev-year">&#8592;</button>
+            <span id="cal-year-label"></span>
+            <button class="cal-year-btn" id="cal-next-year">&#8594;</button>
+        </div>
+        <div id="year-calendar" class="year-calendar-grid"></div>
+    </section>
+
+    <!-- News Panel -->
+    <div id="news-panel" class="news-panel">
+        <button class="news-collapse-bar" id="news-tab" aria-label="Toggle news panel">
+            <span class="news-collapse-arrow">&#8250;</span>
+        </button>
+        <div class="news-panel-body">
+            <div class="news-panel-inner">
+                <h3 class="news-panel-title">Company News</h3>
+                <div id="news-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/manager_dashboard.js"></script>
+    <script src="/js/holiday_matrix.js"></script>
+    <script src="/js/news_panel.js"></script>
+</body>
+</html>

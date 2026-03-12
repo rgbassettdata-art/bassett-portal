@@ -1,2 +1,8 @@
 node_modules/
 users.json
+holiday_requests.json
+phone_list.json
+absences.json
+data.db
+data.db-shm
+data.db-wal

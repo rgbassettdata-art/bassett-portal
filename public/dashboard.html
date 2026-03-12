@@ -5,19 +5,37 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard — RG Bassett &amp; Sons</title>
+    <link rel="icon" type="image/png" href="/logo.png">
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/holiday_matrix.css">
+    <link rel="stylesheet" href="/css/news_panel.css">
 </head>
 <body>
 
     <header class="dash-header">
         <a href="/dashboard.html" class="dash-brand">
-            <span class="dash-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
-            <span class="dash-brand-name">Employee Portal</span>
+            <img src="/logo.png" alt="RG Bassett & Sons" class="dash-brand-logo" />
+            <span class="dash-brand-text">
+                <span class="dash-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
+                <span class="dash-brand-name">Employee Portal</span>
+            </span>
         </a>
-        <div class="dash-logout">
-            <form method="POST" action="/logout">
-                <button type="submit">Sign Out</button>
-            </form>
+        <div class="dash-header-actions">
+            <div class="dash-links-wrap" id="links-dropdown-wrap">
+                <button class="dash-links-btn" id="links-btn">Quick Links</button>
+                <div class="dash-links-menu">
+                    <a href="/phone_list.html">Internal Phone List</a>
+                    <a href="#">Company Handbook</a>
+                    <a href="#">Benefits Portal</a>
+                    <a href="#">IT Support</a>
+                    <a href="#">Training Calendar</a>
+                </div>
+            </div>
+            <div class="dash-logout">
+                <form method="POST" action="/logout">
+                    <button type="submit">Sign Out</button>
+                </form>
+            </div>
         </div>
     </header>
 
@@ -27,42 +45,94 @@
             <p>Welcome back. Here's your summary for today.</p>
         </div>
 
-        <div class="dash-grid">
+        <div class="dash-grid" style="grid-template-columns:1fr">
 
             <section id="holidays" class="dash-card">
                 <h2>Annual Leave</h2>
-                <div class="holiday-stat">
-                    <span id="days-left">—</span>
-                    <span class="holiday-sublabel">days remaining</span>
+                <div class="holiday-stats-row">
+                    <div class="holiday-stat">
+                        <span class="holiday-year-label">This Year</span>
+                        <span id="days-left">—</span>
+                        <span class="holiday-sublabel">days remaining</span>
+                        <span id="this-year-detail" class="holiday-detail"></span>
+                    </div>
+                    <div class="holiday-stat-divider"></div>
+                    <div class="holiday-stat">
+                        <span class="holiday-year-label">Next Year</span>
+                        <span id="next-year-booked">—</span>
+                        <span class="holiday-sublabel">days booked</span>
+                        <span id="next-year-detail" class="holiday-detail"></span>
+                    </div>
                 </div>
-            </section>
-
-            <section id="links" class="dash-card">
-                <h2>Useful Links</h2>
-                <ul>
-                    <li><a href="#">Company Handbook</a></li>
-                    <li><a href="#">Benefits Portal</a></li>
-                    <li><a href="#">IT Support</a></li>
-                    <li><a href="#">Training Calendar</a></li>
-                </ul>
             </section>
 
             <div id="admin-zone"></div>
 
         </div>
+
+        <!-- Holiday Request -->
+        <section class="req-section">
+            <h2 class="req-section-title">Holiday Requests</h2>
+
+            <form id="holiday-request-form" class="req-form">
+                <div class="req-form-row">
+                    <div class="req-field">
+                        <label for="req-start">From</label>
+                        <input id="req-start" name="startDate" type="date" required />
+                    </div>
+                    <div class="req-field">
+                        <label for="req-end">To</label>
+                        <input id="req-end" name="endDate" type="date" required />
+                    </div>
+                    <button type="submit" class="req-submit">Request Holiday</button>
+                </div>
+                <p id="request-msg" class="req-msg"></p>
+            </form>
+
+            <table class="req-table">
+                <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Days</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="request-list-body">
+                    <tr><td colspan="5" class="req-empty">Loading…</td></tr>
+                </tbody>
+            </table>
+        </section>
+
     </main>
 
+    <section id="holiday-matrix-section" class="hm-section"></section>
+
+    <section class="year-calendar-section">
+        <div class="year-calendar-header">
+            <button class="cal-year-btn" id="cal-prev-year">&#8592;</button>
+            <span id="cal-year-label"></span>
+            <button class="cal-year-btn" id="cal-next-year">&#8594;</button>
+        </div>
+        <div id="year-calendar" class="year-calendar-grid"></div>
+    </section>
+
+    <!-- News Panel -->
+    <div id="news-panel" class="news-panel">
+        <button class="news-collapse-bar" id="news-tab" aria-label="Toggle news panel">
+            <span class="news-collapse-arrow">&#8250;</span>
+        </button>
+        <div class="news-panel-body">
+            <div class="news-panel-inner">
+                <h3 class="news-panel-title">Company News</h3>
+                <div id="news-list"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="/js/dashboard.js"></script>
-    <script>
-        fetch('/session')
-            .then(r => r.json())
-            .then(user => {
-                if (user.role === 'superuser') {
-                    const zone = document.getElementById('admin-zone');
-                    zone.innerHTML = '<a href="/add_user.html">+ Add User</a>';
-                }
-            })
-            .catch(() => {});
-    </script>
+    <script src="/js/holiday_matrix.js"></script>
+    <script src="/js/news_panel.js"></script>
 </body>
 </html>

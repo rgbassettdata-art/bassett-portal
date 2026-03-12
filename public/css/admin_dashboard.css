@@ -1,0 +1,445 @@
+:root {
+    --navy:      #000066;
+    --orange:    #E8780F;
+    --green:     #25764A;
+    --off-white: #F6F4EF;
+    --dark:      #111;
+    --mid:       #5a5a6a;
+    --border:    rgba(0, 0, 102, 0.12);
+    --red:       #c0392b;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--off-white);
+    min-height: 100vh;
+}
+
+/* ── Header ── */
+.admin-header {
+    border-bottom-color: var(--red);
+}
+
+.dash-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dash-back-link {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    padding: 0.5rem 1.25rem;
+    border: 1.5px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    transition: border-color 0.2s, color 0.2s, transform 0.18s;
+}
+
+.dash-back-link:hover {
+    border-color: var(--red);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* ── Main layout ── */
+.admin-main {
+    max-width: 98vw;
+    margin: 2.5rem auto;
+    padding: 0 1rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    animation: pageIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section ── */
+.admin-section {
+    background: #fff;
+    border-top: 3px solid var(--red);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.admin-section-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mid);
+    padding: 1.5rem 2rem 0;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Create user form ── */
+.admin-create-form {
+    padding: 0 2rem 2rem;
+}
+
+.admin-form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.admin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.admin-field label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mid);
+}
+
+.admin-field input,
+.admin-field select {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.9rem;
+    color: var(--dark);
+    background: var(--off-white);
+    border: 1.5px solid var(--border);
+    padding: 0.6rem 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-width: 160px;
+    border-radius: 8px;
+}
+
+.admin-field input:focus,
+.admin-field select:focus {
+    border-color: var(--navy);
+}
+
+.admin-field-action {
+    justify-content: flex-end;
+}
+
+/* ── Buttons ── */
+.admin-btn {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.35rem;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    border-radius: 8px;
+    transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+    white-space: nowrap;
+}
+
+.admin-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.admin-btn-create:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 102, 0.18);
+}
+
+.admin-btn-save:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgba(37, 118, 74, 0.2);
+}
+
+.admin-btn-delete:hover {
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.2);
+}
+
+.admin-btn-create {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
+}
+
+.admin-btn-create:hover {
+    background: transparent;
+    color: var(--navy);
+}
+
+.admin-btn-save {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+}
+
+.admin-btn-save:hover {
+    background: transparent;
+    color: var(--green);
+}
+
+.admin-btn-save:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    color: #fff;
+    cursor: default;
+}
+
+.admin-btn-delete {
+    background: transparent;
+    color: var(--red);
+    border-color: var(--red);
+}
+
+.admin-btn-delete:hover {
+    background: var(--red);
+    color: #fff;
+}
+
+/* ── Message ── */
+.admin-msg {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    min-height: 1.2em;
+    color: var(--mid);
+}
+
+.admin-msg.success { color: var(--green); }
+.admin-msg.error   { color: var(--red); }
+
+/* ── Table ── */
+.admin-table-wrap {
+    overflow-x: auto;
+    padding: 0 2rem 2rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.admin-table thead th {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mid);
+    text-align: left;
+    padding: 0 0.5rem 0.6rem 0;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+
+.admin-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(0, 0, 102, 0.02);
+}
+
+.admin-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.admin-table tbody td {
+    padding: 0.6rem 0.5rem 0.6rem 0;
+    vertical-align: middle;
+}
+
+.admin-loading {
+    color: var(--mid);
+    font-size: 0.85rem;
+    padding: 1.5rem 0;
+}
+
+/* ── Role badge ── */
+.role-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.65rem;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.role-employee { background: #eef0f5; color: var(--mid); }
+.role-manager  { background: #e6f4ec; color: var(--green); }
+.role-admin    { background: #fdecea; color: var(--red); }
+
+/* ── Inline controls ── */
+.admin-table select,
+.admin-table input[type="number"] {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.85rem;
+    color: var(--dark);
+    background: var(--off-white);
+    border: 1.5px solid var(--border);
+    padding: 0.35rem 0.6rem;
+    outline: none;
+    transition: border-color 0.2s;
+    border-radius: 8px;
+}
+
+.admin-table select:focus,
+.admin-table input[type="number"]:focus {
+    border-color: var(--navy);
+}
+
+.admin-table input[type="number"] {
+    width: 70px;
+}
+
+.admin-table select:disabled,
+.admin-table input:disabled {
+    opacity: 0.35;
+    cursor: default;
+    background: transparent;
+    border-color: transparent;
+}
+
+.td-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ── Audit section ── */
+.audit-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 1.5rem 1rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mid);
+}
+
+.audit-controls select {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.82rem;
+    color: var(--dark);
+    background: var(--off-white);
+    border: 1.5px solid var(--border);
+    padding: 0.35rem 0.7rem;
+    outline: none;
+    text-transform: none;
+    letter-spacing: 0;
+    border-radius: 8px;
+}
+
+.audit-date {
+    color: var(--mid);
+    font-size: 0.72rem;
+}
+
+/* ── Toggle switch ── */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #ddd;
+    border-radius: 20px;
+    transition: background 0.2s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: var(--green);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(16px);
+}
+
+@media (max-width: 700px) {
+    .admin-form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-field input,
+    .admin-field select {
+        min-width: unset;
+        width: 100%;
+    }
+}
+
+/* ── Work days picker ── */
+.wd-picker {
+    display: flex;
+    gap: 2px;
+}
+
+.wd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    cursor: pointer;
+    border-radius: 4px;
+    background: var(--off-white);
+    border: 1.5px solid var(--border);
+    color: var(--mid);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    padding: 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    flex-shrink: 0;
+}
+
+.wd-btn:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+}
+
+.wd-btn.wd-active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+}

@@ -1,0 +1,210 @@
+.pl-back-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    letter-spacing: 0.03em;
+    transition: color 0.15s;
+}
+.pl-back-link:hover { color: var(--orange); }
+
+/* ── Layout ── */
+.pl-main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem 4rem;
+}
+
+.pl-toolbar {
+    margin-bottom: 1.25rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* ── Section card ── */
+.pl-section {
+    margin-bottom: 1.75rem;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,102,0.08);
+    overflow: hidden;
+}
+
+.pl-section-header {
+    background: var(--navy);
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.pl-section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--orange);
+}
+
+.pl-section-actions {
+    display: flex;
+    gap: 0.35rem;
+}
+
+/* ── Table ── */
+.pl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.pl-table th {
+    background: rgba(0,0,102,0.04);
+    color: var(--mid);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.pl-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--dark);
+    vertical-align: middle;
+}
+
+.pl-table tr:last-child td { border-bottom: none; }
+.pl-table tbody tr:hover td { background: rgba(0,0,102,0.02); }
+
+.pl-table td a {
+    color: var(--navy);
+    text-decoration: none;
+}
+.pl-table td a:hover {
+    text-decoration: underline;
+    color: var(--orange);
+}
+
+.pl-actions-col { width: 90px; white-space: nowrap; }
+
+.pl-add-row td {
+    padding: 0.45rem 0.75rem;
+    background: rgba(0,0,102,0.015);
+}
+
+/* ── Buttons ── */
+.pl-btn {
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.pl-btn:hover { opacity: 0.82; }
+
+.pl-btn-primary { background: var(--navy); color: #fff; }
+.pl-btn-add     { background: var(--orange); color: #fff; }
+.pl-btn-cancel  { background: #e5e5e5; color: var(--dark); }
+
+.pl-btn-edit {
+    background: rgba(0,0,102,0.08);
+    color: var(--navy);
+    padding: 0.2rem 0.5rem;
+    font-size: 0.72rem;
+}
+.pl-btn-delete {
+    background: rgba(200,50,50,0.1);
+    color: #c83232;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.72rem;
+}
+.pl-btn-section {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.72rem;
+}
+
+/* ── Modal ── */
+.pl-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.pl-modal {
+    background: #fff;
+    border-radius: 8px;
+    border-top: 4px solid var(--orange);
+    padding: 1.75rem 2rem;
+    width: 480px;
+    max-width: calc(100vw - 2rem);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.pl-modal h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 1.25rem;
+}
+
+.pl-modal-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.pl-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.pl-modal-field label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--mid);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pl-modal-field input {
+    font-family: inherit;
+    font-size: 0.875rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--dark);
+    outline: none;
+    transition: border-color 0.15s;
+}
+.pl-modal-field input:focus { border-color: var(--navy); }
+
+.pl-modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* ── Misc ── */
+.pl-loading {
+    color: var(--mid);
+    font-size: 0.9rem;
+    padding: 3rem;
+    text-align: center;
+}

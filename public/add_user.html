@@ -5,11 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add User — RG Bassett &amp; Sons</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="stylesheet" href="/css/login.css" />
 </head>
 <body>
     <div class="login-container">
         <div class="login-brand">
+            <img src="/logo.png" alt="RG Bassett & Sons" class="login-logo" />
             <span class="login-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
             <h1>Create New User</h1>
         </div>
@@ -23,15 +25,16 @@
 
             <label for="role">Role</label>
             <select id="role" name="role">
-                <option value="user">User</option>
-                <option value="superuser">Superuser</option>
+                <option value="employee">Employee</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
             </select>
 
             <button type="submit">Create User</button>
         </form>
 
         <p id="message"></p>
-        <a href="/dashboard.html" class="login-back">&larr; Back to dashboard</a>
+        <a href="/admin_dashboard.html" class="login-back">&larr; Back to dashboard</a>
     </div>
     <script>
         const params = new URLSearchParams(window.location.search);

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internal Phone List — RG Bassett &amp; Sons</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/phone_list.css">
+</head>
+<body>
+
+    <header class="dash-header">
+        <a href="#" class="dash-brand" id="brand-link">
+            <img src="/logo.png" alt="RG Bassett &amp; Sons" class="dash-brand-logo" />
+            <span class="dash-brand-text">
+                <span class="dash-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
+                <span class="dash-brand-name">Internal Phone List</span>
+            </span>
+        </a>
+        <div class="dash-header-actions">
+            <a href="#" id="back-link" class="pl-back-link">&#8592; Dashboard</a>
+            <div class="dash-logout">
+                <form method="POST" action="/logout">
+                    <button type="submit">Sign Out</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main class="pl-main">
+        <div class="pl-toolbar" id="pl-toolbar" style="display:none">
+            <button class="pl-btn pl-btn-add" id="add-section-btn">+ Add Section</button>
+        </div>
+        <div id="pl-content">
+            <p class="pl-loading">Loading&hellip;</p>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="pl-modal-overlay" id="modal-overlay" style="display:none">
+        <div class="pl-modal">
+            <h3 id="modal-title">Edit</h3>
+            <form id="modal-form">
+                <div class="pl-modal-fields" id="modal-fields"></div>
+                <div class="pl-modal-actions">
+                    <button type="submit" class="pl-btn pl-btn-primary">Save</button>
+                    <button type="button" class="pl-btn pl-btn-cancel" id="modal-cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/phone_list.js"></script>
+</body>
+</html>

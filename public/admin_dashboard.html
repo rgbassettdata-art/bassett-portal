@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — RG Bassett &amp; Sons</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/admin_dashboard.css">
+    <link rel="stylesheet" href="/css/news_panel.css">
+</head>
+<body>
+
+    <header class="dash-header admin-header">
+        <a href="/admin_dashboard.html" class="dash-brand">
+            <img src="/logo.png" alt="RG Bassett & Sons" class="dash-brand-logo" />
+            <span class="dash-brand-text">
+                <span class="dash-brand-eyebrow">RG Bassett &amp; Sons Ltd</span>
+                <span class="dash-brand-name">Admin Panel</span>
+            </span>
+        </a>
+        <div class="dash-header-actions">
+            <a href="/manager_dashboard.html" class="dash-back-link" id="mgr-back-link" style="display:none">&#8592; Manager View</a>
+            <div class="dash-logout">
+                <form method="POST" action="/logout">
+                    <button type="submit">Sign Out</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-main">
+
+        <!-- Create User -->
+        <section class="admin-section">
+            <h2 class="admin-section-title">Create User</h2>
+            <form id="create-user-form" class="admin-create-form" autocomplete="off">
+                <div class="admin-form-row">
+                    <div class="admin-field">
+                        <label for="new-username">Username</label>
+                        <input id="new-username" name="username" type="text" required />
+                    </div>
+                    <div class="admin-field">
+                        <label for="new-password">Password</label>
+                        <input id="new-password" name="password" type="password" required />
+                    </div>
+                    <div class="admin-field">
+                        <label for="new-role">Role</label>
+                        <select id="new-role" name="role">
+                            <option value="employee">Employee</option>
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="admin-field admin-field-action">
+                        <button type="submit" class="admin-btn admin-btn-create">Create User</button>
+                    </div>
+                </div>
+                <p id="create-msg" class="admin-msg"></p>
+            </form>
+        </section>
+
+        <!-- Manage Users -->
+        <section class="admin-section">
+            <h2 class="admin-section-title">Manage Users</h2>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Clock No.</th>
+                            <th>Department</th>
+                            <th>Colour</th>
+                            <th>Assigned Manager</th>
+                            <th>Holiday Approver</th>
+                            <th>Admin Access</th>
+                            <th>This Year Allow.</th>
+                            <th>Next Year Allow.</th>
+                            <th>Work Days</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr><td colspan="12" class="admin-loading">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Absence Log -->
+        <section class="admin-section">
+            <h2 class="admin-section-title">Absence Log</h2>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="absence-log-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Reason</th>
+                            <th>Logged by</th>
+                            <th>Logged on</th>
+                            <th>Removed by</th>
+                        </tr>
+                    </thead>
+                    <tbody id="absence-log-tbody">
+                        <tr><td colspan="8" class="admin-loading">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Holiday Request Audit -->
+        <section class="admin-section">
+            <h2 class="admin-section-title">Holiday Request Audit</h2>
+            <div class="audit-controls">
+                <label for="audit-filter">Status</label>
+                <select id="audit-filter">
+                    <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="declined">Declined</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="removed">Removed</option>
+                </select>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-table" id="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Decided by</th>
+                            <th>Amended by</th>
+                            <th>Ended by</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-tbody">
+                        <tr><td colspan="10" class="admin-loading">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- News Posts -->
+        <section class="admin-section" id="news-section">
+            <h2 class="admin-section-title">News Posts</h2>
+
+            <div class="news-editor-wrap">
+                <div class="news-editor-mode-bar" id="news-editor-mode-bar">
+                    <span class="news-editor-mode-icon">&#9998;</span>
+                    <span id="news-editor-label">New Post</span>
+                </div>
+                <form id="news-form" autocomplete="off" class="news-editor-form">
+                    <div class="admin-form-row">
+                        <div class="admin-field" style="flex:1;min-width:200px">
+                            <label for="news-title">Title</label>
+                            <input id="news-title" type="text" placeholder="Post title…" required />
+                        </div>
+                        <div class="admin-field news-pin-field">
+                            <label for="news-pinned">Pin to Top</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="news-pinned" />
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="admin-form-row">
+                        <div class="admin-field" style="flex:1">
+                            <label for="news-body">Content</label>
+                            <textarea id="news-body" class="news-editor-textarea" rows="4" placeholder="Post content (optional)…"></textarea>
+                        </div>
+                    </div>
+                    <div class="news-links-section">
+                        <div class="news-links-header">
+                            <span class="news-links-title">Links</span>
+                            <button type="button" id="add-news-link-btn" class="news-add-link-btn">&#43; Add Link</button>
+                        </div>
+                        <div id="news-links-wrap" class="news-links-wrap"></div>
+                    </div>
+                    <div class="news-editor-footer">
+                        <button type="submit" class="admin-btn admin-btn-create" id="news-submit-btn">Publish Post</button>
+                        <button type="button" id="news-cancel-btn" class="admin-btn news-cancel-btn" style="display:none">Cancel</button>
+                        <p id="news-msg" class="admin-msg news-editor-msg"></p>
+                    </div>
+                </form>
+            </div>
+
+            <div id="news-admin-list" class="news-admin-list"></div>
+        </section>
+
+    </main>
+
+    <script src="/js/admin_dashboard.js"></script>
+    <script>
+        fetch('/session').then(r => r.json()).then(u => {
+            if (u.role === 'manager') {
+                document.getElementById('mgr-back-link').style.display = '';
+            }
+        }).catch(() => {});
+    </script>
+</body>
+</html>

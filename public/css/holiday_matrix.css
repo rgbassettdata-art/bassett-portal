@@ -1,0 +1,292 @@
+/* ── Holiday Matrix Section ────────────────────────────────────────────────── */
+.hm-section {
+    margin-top: 2.5rem;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+}
+
+/* ── Controls bar ── */
+.hm-controls {
+    background: var(--navy);
+    border-top: 3px solid var(--orange);
+    padding: 0.65rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.hm-title {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--orange);
+    flex: 1;
+}
+
+.hm-month-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.hm-nav-btn {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.7);
+    font-size: 0.8rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: border-color 0.2s, color 0.2s, transform 0.18s;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+}
+
+.hm-nav-btn:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    transform: translateY(-1px);
+}
+
+.hm-month-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #fff;
+    min-width: 130px;
+    text-align: center;
+}
+
+.hm-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.hm-filter-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    white-space: nowrap;
+}
+
+.hm-dept-select {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8rem;
+    color: var(--dark);
+    background: var(--off-white);
+    border: 1.5px solid transparent;
+    padding: 0.3rem 0.65rem;
+    outline: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.hm-dept-select:focus {
+    border-color: var(--orange);
+}
+
+.hm-legend {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.hm-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+}
+
+.hm-legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 10px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.7);
+    flex-shrink: 0;
+}
+
+.hm-ls-pending {
+    opacity: 0.38;
+}
+
+/* ── Scroll wrapper ── */
+.hm-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 540px;
+}
+
+/* ── Matrix table ── */
+.hm-table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: auto;
+    min-width: 100%;
+}
+
+/* ── Name column (sticky left) ── */
+.hm-th-name,
+.hm-td-name {
+    width: 164px;
+    min-width: 164px;
+    max-width: 164px;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #fff;
+    border-right: 2px solid var(--border);
+}
+
+.hm-th-name {
+    z-index: 4;
+    background: var(--off-white);
+}
+
+/* ── Header row (sticky top) ── */
+.hm-th-name,
+.hm-th-day {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--off-white);
+    border-bottom: 2px solid var(--border);
+}
+
+/* ── Day header cells ── */
+.hm-th-day {
+    width: 30px;
+    min-width: 28px;
+    text-align: center;
+    padding: 0.4rem 0 0.3rem;
+    border-left: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.hm-dnum {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1;
+}
+
+.hm-ddow {
+    display: block;
+    font-size: 0.5rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-top: 1px;
+}
+
+.hm-wknd .hm-dnum,
+.hm-wknd .hm-ddow { color: #bbb; }
+
+.hm-bkhol .hm-dnum,
+.hm-bkhol .hm-ddow { color: #bbb; }
+
+.hm-th-day.hm-col-tdy {
+    background: rgba(232, 120, 15, 0.1);
+}
+
+.hm-th-day.hm-col-tdy .hm-dnum {
+    color: var(--orange);
+}
+
+/* ── Name data cells ── */
+.hm-td-name {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.82rem;
+    color: var(--dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 1px solid var(--border);
+    height: 36px;
+}
+
+.hm-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.hm-uname {
+    vertical-align: middle;
+    font-weight: 500;
+}
+
+.hm-dept-tag {
+    display: inline-block;
+    margin-left: 0.45rem;
+    font-size: 0.6rem;
+    color: var(--mid);
+    vertical-align: middle;
+    font-weight: 400;
+}
+
+/* ── Day data cells ── */
+.hm-td-day {
+    height: 36px;
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+}
+
+.hm-td-day.hm-non-working { background: rgba(0,0,0,0.055); }
+.hm-td-day.hm-wknd  { background: rgba(0,0,0,0.025); }
+.hm-td-day.hm-bkhol { background: rgba(0,0,102,0.04); }
+.hm-td-day.hm-col-tdy { background: rgba(232,120,15,0.06); }
+.hm-td-day.hm-pending { opacity: 0.38; }
+.hm-td-day.hm-absent {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(192,57,43,0.13),
+        rgba(192,57,43,0.13) 3px,
+        transparent 3px,
+        transparent 7px
+    );
+}
+.hm-ls-absent {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(192,57,43,0.6),
+        rgba(192,57,43,0.6) 3px,
+        rgba(192,57,43,0.1) 3px,
+        rgba(192,57,43,0.1) 7px
+    );
+}
+
+/* last row: no border-bottom */
+.hm-table tbody tr:last-child .hm-td-name,
+.hm-table tbody tr:last-child .hm-td-day { border-bottom: none; }
+
+/* ── Empty state ── */
+.hm-empty-cell {
+    color: var(--mid);
+    font-size: 0.85rem;
+    padding: 2rem;
+    text-align: center;
+}
