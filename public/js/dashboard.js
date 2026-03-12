@@ -5,6 +5,9 @@
     fetch('/session')
         .then(r => r.json())
         .then(user => {
+            const heading = document.getElementById('dash-main-heading');
+            if (heading && user.username) heading.textContent = 'Dashboard – ' + user.username;
+
             const total = (user.totalHolidays ?? 28) + (user.carriedOver ?? 0);
             const taken = user.takenHolidays ?? 0;
             daysLeftEl.textContent = total - taken;
