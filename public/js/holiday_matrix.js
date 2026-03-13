@@ -56,9 +56,16 @@
         var daysInMonth = new Date(displayYear, displayMonth + 1, 0).getDate();
         var reqMap      = buildReqMap();
         var absenceMap  = buildAbsenceMap();
-        var visible     = filterDept
+        var visible     = (filterDept
             ? allUsers.filter(function (u) { return u.department === filterDept; })
-            : allUsers;
+            : allUsers.slice()
+        ).sort(function (a, b) {
+            var dA = (a.department || '').toLowerCase();
+            var dB = (b.department || '').toLowerCase();
+            if (dA < dB) return -1;
+            if (dA > dB) return  1;
+            return (a.username || '').toLowerCase().localeCompare((b.username || '').toLowerCase());
+        });
 
         section.innerHTML = '';
 

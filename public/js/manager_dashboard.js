@@ -63,25 +63,58 @@
     }
 
     // ── Load team + approved holidays ─────────────────────────────────────────
+    var allUsers   = [];
+    var allApproved = [];
+
     function loadTeam() {
         Promise.all([
             fetch('/users').then(function (r) { return r.json(); }),
             fetch('/holiday-requests/approved').then(function (r) { return r.json(); }),
         ]).then(function (results) {
-            var users    = results[0];
-            var approved = results[1];
+            allUsers    = results[0];
+            allApproved = results[1];
 
-            document.getElementById('stat-headcount').textContent = users.length;
+            document.getElementById('stat-headcount').textContent = allUsers.length;
 
             var today   = new Date().toISOString().slice(0, 10);
-            var onLeave = approved.filter(function (req) {
+            var onLeave = allApproved.filter(function (req) {
                 return req.startDate <= today && req.endDate >= today;
             });
             document.getElementById('stat-on-leave').textContent = onLeave.length;
 
-            applyCalendarHighlights(approved);
-            renderTeamTable(users, approved);
+            applyCalendarHighlights(allApproved);
+            populateTeamDeptFilter();
+            applyTeamFilter();
         }).catch(function () {});
+    }
+
+    function populateTeamDeptFilter() {
+        var sel = document.getElementById('team-dept-filter');
+        if (!sel) return;
+        var deptSet = {};
+        allUsers.forEach(function (u) { if (u.department) deptSet[u.department] = true; });
+        var depts = Object.keys(deptSet).sort();
+        var current = sel.value;
+        sel.innerHTML = '<option value="">All</option>';
+        depts.forEach(function (d) {
+            var opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            if (d === current) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    }
+
+    function applyTeamFilter() {
+        var sel    = document.getElementById('team-dept-filter');
+        var filter = sel ? sel.value : '';
+        var users  = filter
+            ? allUsers.filter(function (u) { return u.department === filter; })
+            : allUsers.slice();
+        users.sort(function (a, b) {
+            return (a.username || '').toLowerCase().localeCompare((b.username || '').toLowerCase());
+        });
+        renderTeamTable(users, allApproved);
     }
 
     function renderTeamTable(users, approved) {
@@ -114,15 +147,25 @@
     }
 
     // ── Load leave requests ───────────────────────────────────────────────────
+    var allTeamReqs = [];
+
     function loadRequests() {
         fetch('/holiday-requests/team')
             .then(function (r) { return r.json(); })
             .then(function (reqs) {
+                allTeamReqs = reqs;
                 var pending = reqs.filter(function (r) { return r.status === 'pending'; });
                 document.getElementById('stat-open-requests').textContent = pending.length;
-                renderRequests(reqs);
+                applyRequestFilter();
             })
             .catch(function () {});
+    }
+
+    function applyRequestFilter() {
+        var sel    = document.getElementById('lr-status-filter');
+        var filter = sel ? sel.value : 'pending';
+        var reqs   = filter ? allTeamReqs.filter(function (r) { return r.status === filter; }) : allTeamReqs;
+        renderRequests(reqs);
     }
 
     function renderRequests(reqs) {
@@ -467,6 +510,39 @@
             sel.appendChild(opt);
         });
     }
+
+    // ── Leave request status filter ───────────────────────────────────────────
+    (function () {
+        var sel = document.getElementById('lr-status-filter');
+        if (sel) sel.addEventListener('change', applyRequestFilter);
+    })();
+
+    // ── Team department filter ────────────────────────────────────────────────
+    (function () {
+        var sel = document.getElementById('team-dept-filter');
+        if (sel) sel.addEventListener('change', applyTeamFilter);
+    })();
+
+    // ── Drawer toggles ────────────────────────────────────────────────────────
+    (function () {
+        var holidayBtn    = document.getElementById('holiday-drawer-toggle');
+        var holidayDrawer = document.getElementById('holiday-drawer');
+        if (holidayBtn && holidayDrawer) {
+            holidayBtn.addEventListener('click', function () {
+                var open = holidayDrawer.classList.toggle('open');
+                holidayBtn.querySelector('.dash-qa-icon').textContent = open ? '−' : '+';
+            });
+        }
+
+        var absenceBtn    = document.getElementById('absence-drawer-toggle');
+        var absenceDrawer = document.getElementById('absence-drawer');
+        if (absenceBtn && absenceDrawer) {
+            absenceBtn.addEventListener('click', function () {
+                var open = absenceDrawer.classList.toggle('open');
+                absenceBtn.querySelector('.dash-qa-icon').textContent = open ? '−' : '+';
+            });
+        }
+    })();
 
     loadTeam();
     loadRequests();

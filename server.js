@@ -1002,38 +1002,11 @@ app.get('/session', (req, res) => {
 
 // Holiday matrix data (available to all logged-in users)
 app.get('/holiday-matrix', ensureLoggedIn, (req, res) => {
-  const { username, role } = req.session.user;
   const allUsers = loadUsers();
   const allReqs  = loadRequests();
 
-  let teamUsers;
-  if (role === 'admin') {
-    teamUsers = allUsers.filter(u => u.role !== 'admin');
-  } else if (role === 'manager') {
-    const selfUser        = allUsers.find(u => u.username === username);
-    const directTeam      = allUsers.filter(u => u.manager  === username);
-    const managedManagers = allUsers.filter(u => u.approver === username);
-    const seen = new Set();
-    teamUsers = [selfUser, ...directTeam, ...managedManagers].filter(u => {
-      if (!u || seen.has(u.username)) return false;
-      seen.add(u.username); return true;
-    });
-  } else {
-    const selfUser  = allUsers.find(u => u.username === username);
-    const myManager = selfUser?.manager;
-    if (myManager) {
-      const seen = new Set();
-      teamUsers = allUsers.filter(u => {
-        if (u.role === 'admin') return false;
-        if ((u.username === username || u.manager === myManager) && !seen.has(u.username)) {
-          seen.add(u.username); return true;
-        }
-        return false;
-      });
-    } else {
-      teamUsers = selfUser ? [selfUser] : [];
-    }
-  }
+  // Always show every non-admin user so everyone can see the full team calendar
+  const teamUsers = allUsers.filter(u => u.role !== 'admin');
 
   const teamSet = new Set(teamUsers.map(u => u.username));
   const users   = teamUsers.map(u => ({

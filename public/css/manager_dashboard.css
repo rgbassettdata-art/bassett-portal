@@ -42,6 +42,18 @@
     align-items: start;
 }
 
+/* ── Leave Requests + Team Members row (scrollable tables) ── */
+.mgr-row-tables {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.mgr-table-scroll {
+    overflow-x: auto;
+}
+
 .dash-admin-link {
     font-family: 'Segoe UI', system-ui, sans-serif;
     font-size: 0.7rem;
@@ -194,6 +206,31 @@
     color: var(--mid);
     font-size: 0.8rem;
     text-transform: capitalize;
+}
+
+.mgr-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+}
+
+.mgr-card-header h2 {
+    margin: 0;
+}
+
+.mgr-lr-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--mid);
+}
+
+.mgr-lr-filter label {
+    white-space: nowrap;
 }
 
 .mgr-table-empty {
@@ -363,7 +400,8 @@
 
 /* ── Responsive ── */
 @media (max-width: 860px) {
-    .mgr-row-half {
+    .mgr-row-half,
+    .mgr-row-tables {
         grid-template-columns: 1fr;
     }
 }

@@ -361,11 +361,25 @@ window.MonthCalendar = (function () {
     }).catch(function () {});
 })();
 
+// ── Request Holiday drawer toggle ─────────────────────────────────────────────
+(function () {
+    var toggleBtn = document.getElementById('req-drawer-toggle');
+    var drawer    = document.getElementById('req-section-drawer');
+    if (!toggleBtn || !drawer) return;
+
+    toggleBtn.addEventListener('click', function () {
+        var isOpen = drawer.classList.toggle('open');
+        toggleBtn.querySelector('.dash-qa-icon').textContent = isOpen ? '−' : '+';
+    });
+})();
+
 // ── Employee: holiday request form & list ─────────────────────────────────────
 (function () {
     var form     = document.getElementById('holiday-request-form');
     var listBody = document.getElementById('request-list-body');
     if (!form) return;
+
+    var allReqs = [];
 
     function statusBadge(s) {
         var map = { pending: '#e8a020', approved: '#25764A', declined: '#c0392b' };
@@ -380,45 +394,112 @@ window.MonthCalendar = (function () {
         return p[2] + ' ' + months[parseInt(p[1], 10) - 1] + ' ' + p[0];
     }
 
+    function renderList(reqs) {
+        if (!listBody) return;
+        if (reqs.length === 0) {
+            listBody.innerHTML = '<tr><td colspan="5" class="req-empty">No requests found.</td></tr>';
+            return;
+        }
+        listBody.innerHTML = '';
+        reqs.forEach(function (r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td>' + fmtDay(r.startDate) + '</td>' +
+                '<td>' + fmtDay(r.endDate)   + '</td>' +
+                '<td>' + r.days      + '</td>' +
+                '<td>' + statusBadge(r.status) + '</td>' +
+                '<td>' + (r.status === 'pending' ? '<button class="req-cancel-btn" data-id="' + r.id + '">Cancel</button>' : '') + '</td>';
+            listBody.appendChild(tr);
+        });
+
+        listBody.querySelectorAll('.req-cancel-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (!confirm('Cancel this holiday request?')) return;
+                fetch('/holiday-requests/mine/' + btn.dataset.id, { method: 'DELETE' })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.success) loadList();
+                        else alert(data.error || 'Could not cancel request.');
+                    })
+                    .catch(function () {});
+            });
+        });
+    }
+
+    function applyFilters() {
+        var from = document.getElementById('filter-from').value; // 'YYYY-MM-DD' or ''
+        var to   = document.getElementById('filter-to').value;
+        var filtered = allReqs.filter(function (r) {
+            if (from && r.startDate < from) return false;
+            if (to   && r.startDate > to)   return false;
+            return true;
+        });
+        renderList(filtered);
+    }
+
+    function renderUpcoming(reqs) {
+        var el = document.getElementById('upcoming-holidays');
+        if (!el) return;
+        var today = new Date().toISOString().slice(0, 10);
+        var statusColour = { pending: '#e8a020', approved: '#25764A', declined: '#c0392b' };
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+        function fmt(s) {
+            if (!s) return '—';
+            var p = s.split('-');
+            return p[2] + ' ' + months[parseInt(p[1], 10) - 1];
+        }
+
+        var upcoming = reqs
+            .filter(function (r) { return r.startDate >= today && (r.status === 'approved' || r.status === 'pending'); })
+            .sort(function (a, b) { return a.startDate.localeCompare(b.startDate); })
+            .slice(0, 2);
+
+        if (upcoming.length === 0) {
+            el.innerHTML = '<span class="upcoming-none">No upcoming holidays</span>';
+            return;
+        }
+
+        el.innerHTML = upcoming.map(function (r) {
+            var c = statusColour[r.status] || '#888';
+            var sameMonth = r.startDate.slice(0, 7) === r.endDate.slice(0, 7);
+            var dateStr = sameMonth
+                ? fmt(r.startDate) + ' – ' + r.endDate.split('-')[2]
+                : fmt(r.startDate) + ' – ' + fmt(r.endDate);
+            return '<div class="upcoming-item">' +
+                '<span class="upcoming-dot" style="background:' + c + '"></span>' +
+                '<div>' +
+                  '<div class="upcoming-dates">' + dateStr + '</div>' +
+                  '<div class="upcoming-days">' + r.days + ' day' + (r.days !== 1 ? 's' : '') +
+                    ' &nbsp;<span class="upcoming-status" style="background:' + c + '22;color:' + c + '">' + r.status + '</span>' +
+                  '</div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
     function loadList() {
         fetch('/holiday-requests/mine')
             .then(function (r) { return r.json(); })
             .then(function (reqs) {
-                if (!listBody) return;
-                if (reqs.length === 0) {
-                    listBody.innerHTML = '<tr><td colspan="5" class="req-empty">No requests yet.</td></tr>';
-                    return;
-                }
                 reqs.sort(function (a, b) { return b.requestedAt.localeCompare(a.requestedAt); });
-                listBody.innerHTML = '';
-                reqs.forEach(function (r) {
-                    var tr = document.createElement('tr');
-                    tr.innerHTML =
-                        '<td>' + fmtDay(r.startDate) + '</td>' +
-                        '<td>' + fmtDay(r.endDate)   + '</td>' +
-                        '<td>' + r.days      + '</td>' +
-                        '<td>' + statusBadge(r.status) + '</td>' +
-                        '<td>' + (r.status === 'pending' ? '<button class="req-cancel-btn" data-id="' + r.id + '">Cancel</button>' : '') + '</td>';
-                    listBody.appendChild(tr);
-                });
-
-                listBody.querySelectorAll('.req-cancel-btn').forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        if (!confirm('Cancel this holiday request?')) return;
-                        fetch('/holiday-requests/mine/' + btn.dataset.id, { method: 'DELETE' })
-                            .then(function (r) { return r.json(); })
-                            .then(function (data) {
-                                if (data.success) loadList();
-                                else alert(data.error || 'Could not cancel request.');
-                            })
-                            .catch(function () {});
-                    });
-                });
+                allReqs = reqs;
+                applyFilters();
+                renderUpcoming(reqs);
             })
             .catch(function () {});
     }
 
     loadList();
+
+    // Filter inputs
+    document.getElementById('filter-from').addEventListener('change', applyFilters);
+    document.getElementById('filter-to').addEventListener('change', applyFilters);
+    document.getElementById('filter-clear-btn').addEventListener('click', function () {
+        document.getElementById('filter-from').value = '';
+        document.getElementById('filter-to').value   = '';
+        applyFilters();
+    });
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();

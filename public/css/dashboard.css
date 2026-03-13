@@ -329,6 +329,55 @@ body {
     margin-top: 0.2rem;
 }
 
+.holiday-stat--upcoming {
+    flex: 1;
+}
+
+.upcoming-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 0.35rem;
+}
+
+.upcoming-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upcoming-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.upcoming-dates {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.upcoming-days {
+    font-size: 0.72rem;
+    color: var(--mid);
+}
+
+.upcoming-status {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+}
+
+.upcoming-none {
+    font-size: 0.78rem;
+    color: var(--mid);
+}
+
 /* ── Links ── */
 #links ul {
     list-style: none;
@@ -398,6 +447,64 @@ body {
     color: #fff;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 102, 0.2);
+}
+
+/* ─────────────────────────────────────────
+   Quick Action Buttons
+───────────────────────────────────────── */
+.dash-quick-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.dash-qa-btn {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.65rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: background 0.18s, color 0.18s, transform 0.18s, box-shadow 0.18s;
+    border: 1.5px solid;
+}
+
+.dash-qa-icon {
+    font-size: 1.2rem;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.dash-qa-btn--primary {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
+}
+
+.dash-qa-btn--primary:hover {
+    background: transparent;
+    color: var(--navy);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 102, 0.2);
+}
+
+.dash-qa-btn--secondary {
+    background: var(--orange);
+    color: #fff;
+    border-color: var(--orange);
+}
+
+.dash-qa-btn--secondary:hover {
+    background: transparent;
+    color: var(--orange);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(232, 120, 15, 0.2);
 }
 
 /* ─────────────────────────────────────────
@@ -546,6 +653,51 @@ body {
 .cal-day.today.bank-holiday {
     background: var(--orange);
     color: #fff;
+}
+
+/* ─────────────────────────────────────────
+   Holiday Request Drawer
+───────────────────────────────────────── */
+.req-section-drawer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.req-section-drawer.open {
+    max-height: 2000px;
+}
+
+/* Filter row above the table */
+.req-filter-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: 1.75rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.req-filter-clear-btn {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    color: var(--mid);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.req-filter-clear-btn:hover {
+    border-color: var(--mid);
+    color: var(--dark);
 }
 
 /* ─────────────────────────────────────────

@@ -22,6 +22,7 @@
             </span>
         </a>
         <div class="dash-header-actions">
+            <button class="news-trigger-btn" id="news-tab" aria-label="Open posts">Posts</button>
             <div class="dash-links-wrap" id="links-dropdown-wrap">
                 <button class="dash-links-btn" id="links-btn">Quick Links</button>
                 <div class="dash-links-menu">
@@ -40,17 +41,18 @@
         </div>
     </header>
 
-    <!-- News Panel -->
-    <div id="news-panel" class="news-panel">
-        <button class="news-collapse-bar" id="news-tab" aria-label="Toggle news panel">
-            <span class="news-bar-left">
-                <span class="news-bar-label">Company News</span>
-            </span>
-            <span class="news-collapse-arrow">&#8250;</span>
-        </button>
-        <div class="news-panel-body">
-            <div class="news-panel-inner">
-                <div id="news-list"></div>
+    <!-- News Panel Overlay -->
+    <div id="news-panel" class="news-panel" aria-hidden="true">
+        <div class="news-overlay-backdrop" id="news-backdrop"></div>
+        <div class="news-overlay-pane">
+            <div class="news-overlay-header">
+                <span class="news-overlay-title">Posts</span>
+                <button class="news-overlay-close" id="news-close" aria-label="Close">&#x2715;</button>
+            </div>
+            <div class="news-panel-body">
+                <div class="news-panel-inner">
+                    <div id="news-list"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -59,6 +61,12 @@
         <div class="dash-greeting">
             <h1 id="dash-main-heading">Dashboard</h1>
             <p>Welcome back. Here's your summary for today.</p>
+        </div>
+
+        <div class="dash-quick-actions">
+            <button class="dash-qa-btn dash-qa-btn--primary" id="req-drawer-toggle">
+                <span class="dash-qa-icon">+</span> Request Holiday
+            </button>
         </div>
 
         <div class="dash-grid" style="grid-template-columns:1fr">
@@ -79,6 +87,11 @@
                         <span class="holiday-sublabel">days booked</span>
                         <span id="next-year-detail" class="holiday-detail"></span>
                     </div>
+                    <div class="holiday-stat-divider"></div>
+                    <div class="holiday-stat holiday-stat--upcoming">
+                        <span class="holiday-year-label">Upcoming</span>
+                        <div id="upcoming-holidays" class="upcoming-list"><span class="holiday-detail">Loading…</span></div>
+                    </div>
                 </div>
             </section>
 
@@ -87,8 +100,9 @@
         </div>
 
         <!-- Holiday Request -->
+        <div id="req-section-drawer" class="req-section-drawer">
         <section class="req-section">
-            <h2 class="req-section-title">Holiday Requests</h2>
+            <h2 class="req-section-title">New Request</h2>
 
             <form id="holiday-request-form" class="req-form">
                 <div class="req-form-row">
@@ -100,10 +114,23 @@
                         <label for="req-end">To</label>
                         <input id="req-end" name="endDate" type="date" required />
                     </div>
-                    <button type="submit" class="req-submit">Request Holiday</button>
+                    <button type="submit" class="req-submit">Submit Request</button>
                 </div>
                 <p id="request-msg" class="req-msg"></p>
             </form>
+
+            <div class="req-filter-row">
+                <h2 class="req-section-title" style="margin-bottom:0;align-self:center;">My Requests</h2>
+                <div class="req-field">
+                    <label for="filter-from">From</label>
+                    <input id="filter-from" type="date" />
+                </div>
+                <div class="req-field">
+                    <label for="filter-to">To</label>
+                    <input id="filter-to" type="date" />
+                </div>
+                <button type="button" id="filter-clear-btn" class="req-filter-clear-btn">Clear</button>
+            </div>
 
             <table class="req-table">
                 <thead>
@@ -120,6 +147,7 @@
                 </tbody>
             </table>
         </section>
+        </div>
 
     </main>
 

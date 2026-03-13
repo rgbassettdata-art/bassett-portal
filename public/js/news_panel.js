@@ -10,12 +10,28 @@
     badge.style.display = 'none';
     tab.appendChild(badge);
 
-    tab.addEventListener('click', () => {
-        panel.classList.toggle('open');
-        if (panel.classList.contains('open')) {
-            localStorage.setItem('newsLastSeenAt', new Date().toISOString());
-            badge.style.display = 'none';
-        }
+    function openPanel() {
+        panel.classList.add('open');
+        panel.setAttribute('aria-hidden', 'false');
+        localStorage.setItem('newsLastSeenAt', new Date().toISOString());
+        badge.style.display = 'none';
+    }
+
+    function closePanel() {
+        panel.classList.remove('open');
+        panel.setAttribute('aria-hidden', 'true');
+    }
+
+    tab.addEventListener('click', openPanel);
+
+    const closeBtn = document.getElementById('news-close');
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+    const backdrop = document.getElementById('news-backdrop');
+    if (backdrop) backdrop.addEventListener('click', closePanel);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && panel.classList.contains('open')) closePanel();
     });
 
     function esc(s) {

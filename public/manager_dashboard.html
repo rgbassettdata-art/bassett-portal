@@ -24,6 +24,7 @@
         </a>
 
         <div class="dash-header-actions">
+            <button class="news-trigger-btn" id="news-tab" aria-label="Open posts">Posts</button>
             <a href="/admin_dashboard.html" class="dash-admin-link" id="admin-panel-link" style="display:none">Admin Panel</a>
             <div class="dash-links-wrap" id="links-dropdown-wrap">
                 <button class="dash-links-btn" id="links-btn">Quick Links</button>
@@ -42,17 +43,18 @@
         </div>
     </header>
 
-    <!-- News Panel -->
-    <div id="news-panel" class="news-panel">
-        <button class="news-collapse-bar" id="news-tab" aria-label="Toggle news panel">
-            <span class="news-bar-left">
-                <span class="news-bar-label">Company News</span>
-            </span>
-            <span class="news-collapse-arrow">&#8250;</span>
-        </button>
-        <div class="news-panel-body">
-            <div class="news-panel-inner">
-                <div id="news-list"></div>
+    <!-- News Panel Overlay -->
+    <div id="news-panel" class="news-panel" aria-hidden="true">
+        <div class="news-overlay-backdrop" id="news-backdrop"></div>
+        <div class="news-overlay-pane">
+            <div class="news-overlay-header">
+                <span class="news-overlay-title">Posts</span>
+                <button class="news-overlay-close" id="news-close" aria-label="Close">&#x2715;</button>
+            </div>
+            <div class="news-panel-body">
+                <div class="news-panel-inner">
+                    <div id="news-list"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -90,141 +92,178 @@
             </div>
         </div>
 
+        <div class="dash-quick-actions">
+            <button class="dash-qa-btn dash-qa-btn--primary" id="holiday-drawer-toggle">
+                <span class="dash-qa-icon">+</span> Request Holiday
+            </button>
+            <button class="dash-qa-btn dash-qa-btn--secondary" id="absence-drawer-toggle">
+                <span class="dash-qa-icon">+</span> Log Absence
+            </button>
+        </div>
+
         <div class="mgr-layout">
 
-            <!-- Book holiday + My Requests side by side -->
-            <div class="mgr-row-half">
-                <section class="dash-card" id="book-holiday-card">
-                    <h2>Book Holiday</h2>
-                    <div class="req-form-row mgr-book-form">
-                        <div class="req-field mgr-book-field-for">
-                            <label for="book-for">For</label>
-                            <select id="book-for" class="mgr-book-select"></select>
+            <!-- Holiday drawer: Book form + My Requests -->
+            <div id="holiday-drawer" class="req-section-drawer">
+                <div class="mgr-row-half">
+                    <section class="dash-card" id="book-holiday-card">
+                        <h2>Book Holiday</h2>
+                        <div class="req-form-row mgr-book-form">
+                            <div class="req-field mgr-book-field-for">
+                                <label for="book-for">For</label>
+                                <select id="book-for" class="mgr-book-select"></select>
+                            </div>
+                            <div class="req-field">
+                                <label for="book-start">From</label>
+                                <input type="date" id="book-start" class="mgr-book-date" />
+                            </div>
+                            <div class="req-field">
+                                <label for="book-end">To</label>
+                                <input type="date" id="book-end" class="mgr-book-date" />
+                            </div>
+                            <div class="req-field mgr-book-action">
+                                <label>&nbsp;</label>
+                                <button id="book-submit" class="req-submit">Book Holiday</button>
+                            </div>
                         </div>
-                        <div class="req-field">
-                            <label for="book-start">From</label>
-                            <input type="date" id="book-start" class="mgr-book-date" />
-                        </div>
-                        <div class="req-field">
-                            <label for="book-end">To</label>
-                            <input type="date" id="book-end" class="mgr-book-date" />
-                        </div>
-                        <div class="req-field mgr-book-action">
-                            <label>&nbsp;</label>
-                            <button id="book-submit" class="req-submit">Book Holiday</button>
-                        </div>
-                    </div>
-                    <p id="book-msg" class="req-msg"></p>
-                </section>
+                        <p id="book-msg" class="req-msg"></p>
+                    </section>
 
-                <section class="dash-card" id="my-requests-card">
-                    <h2>My Holiday Requests</h2>
-                    <table class="mgr-table" id="my-requests-table">
-                        <thead>
-                            <tr>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Days</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="my-requests-body">
-                            <tr><td colspan="5" class="mgr-table-empty">Loading…</td></tr>
-                        </tbody>
-                    </table>
-                </section>
+                    <section class="dash-card" id="my-requests-card">
+                        <h2>My Holiday Requests</h2>
+                        <table class="mgr-table" id="my-requests-table">
+                            <thead>
+                                <tr>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-requests-body">
+                                <tr><td colspan="5" class="mgr-table-empty">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
             </div>
 
-            <!-- Log Absence + Absence Records side by side -->
-            <div class="mgr-row-half">
-                <section class="dash-card" id="log-absence-card">
-                    <h2>Log Absence</h2>
-                    <div class="req-form-row mgr-book-form" style="flex-wrap:wrap;gap:0.75rem;">
-                        <div class="req-field mgr-book-field-for">
-                            <label for="absence-for">Employee</label>
-                            <select id="absence-for" class="mgr-book-select"></select>
+            <!-- Absence drawer: Log form + Absence Records -->
+            <div id="absence-drawer" class="req-section-drawer">
+                <div class="mgr-row-half">
+                    <section class="dash-card" id="log-absence-card">
+                        <h2>Log Absence</h2>
+                        <div class="req-form-row mgr-book-form" style="flex-wrap:wrap;gap:0.75rem;">
+                            <div class="req-field mgr-book-field-for">
+                                <label for="absence-for">Employee</label>
+                                <select id="absence-for" class="mgr-book-select"></select>
+                            </div>
+                            <div class="req-field">
+                                <label for="absence-start">From</label>
+                                <input type="date" id="absence-start" class="mgr-book-date" />
+                            </div>
+                            <div class="req-field">
+                                <label for="absence-end">To</label>
+                                <input type="date" id="absence-end" class="mgr-book-date" />
+                            </div>
+                            <div class="req-field" style="flex:1;min-width:160px;">
+                                <label for="absence-reason">Reason (visible to managers only)</label>
+                                <input type="text" id="absence-reason" class="mgr-book-date" placeholder="e.g. Sick leave" style="width:100%;" />
+                            </div>
+                            <div class="req-field mgr-book-action">
+                                <label>&nbsp;</label>
+                                <button id="absence-submit" class="req-submit">Log Absence</button>
+                            </div>
                         </div>
-                        <div class="req-field">
-                            <label for="absence-start">From</label>
-                            <input type="date" id="absence-start" class="mgr-book-date" />
-                        </div>
-                        <div class="req-field">
-                            <label for="absence-end">To</label>
-                            <input type="date" id="absence-end" class="mgr-book-date" />
-                        </div>
-                        <div class="req-field" style="flex:1;min-width:160px;">
-                            <label for="absence-reason">Reason (visible to managers only)</label>
-                            <input type="text" id="absence-reason" class="mgr-book-date" placeholder="e.g. Sick leave" style="width:100%;" />
-                        </div>
-                        <div class="req-field mgr-book-action">
-                            <label>&nbsp;</label>
-                            <button id="absence-submit" class="req-submit">Log Absence</button>
-                        </div>
-                    </div>
-                    <p id="absence-msg" class="req-msg"></p>
-                </section>
+                        <p id="absence-msg" class="req-msg"></p>
+                    </section>
 
-                <section class="dash-card" id="absences-card">
-                    <h2>Absence Records</h2>
-                    <table class="mgr-table" id="absences-table">
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Reason</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="absences-body">
-                            <tr><td colspan="5" class="mgr-table-empty">Loading…</td></tr>
-                        </tbody>
-                    </table>
-                </section>
+                    <section class="dash-card" id="absences-card">
+                        <h2>Absence Records</h2>
+                        <table class="mgr-table" id="absences-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Reason</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="absences-body">
+                                <tr><td colspan="5" class="mgr-table-empty">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
             </div>
 
-            <!-- Pending leave requests — full width -->
-            <section class="dash-card" id="leave-requests-card">
-                <h2>Leave Requests</h2>
-                <table class="mgr-table" id="leave-requests-table">
-                    <thead>
-                        <tr>
-                            <th>Employee</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Days</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leave-requests-body">
-                        <tr><td colspan="6" class="mgr-table-empty">Loading…</td></tr>
-                    </tbody>
-                </table>
-            </section>
+            <!-- Leave Requests + Team Members side by side -->
+            <div class="mgr-row-tables">
+                <section class="dash-card" id="leave-requests-card">
+                    <div class="mgr-card-header">
+                        <h2>Leave Requests</h2>
+                        <div class="req-filter-row mgr-lr-filter">
+                            <label for="lr-status-filter">Status</label>
+                            <select id="lr-status-filter" class="mgr-book-select">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="declined">Declined</option>
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mgr-table-scroll">
+                        <table class="mgr-table" id="leave-requests-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leave-requests-body">
+                                <tr><td colspan="6" class="mgr-table-empty">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
 
-            <!-- Team members — full width -->
-            <section class="dash-card">
-                <h2>Team Members</h2>
-                <table class="mgr-table" id="team-table">
-                    <thead>
-                        <tr>
-                            <th>Employee</th>
-                            <th>Role</th>
-                            <th>Department</th>
-                            <th>This Year Allow.</th>
-                            <th>This Year Taken</th>
-                            <th>This Year Left</th>
-                            <th>Next Year Allow.</th>
-                            <th>Next Year Booked</th>
-                        </tr>
-                    </thead>
-                    <tbody id="team-table-body">
-                        <tr><td colspan="8" class="mgr-table-empty">Loading…</td></tr>
-                    </tbody>
-                </table>
-            </section>
+                <section class="dash-card">
+                    <div class="mgr-card-header">
+                        <h2>Team Members</h2>
+                        <div class="req-filter-row mgr-lr-filter">
+                            <label for="team-dept-filter">Department</label>
+                            <select id="team-dept-filter" class="mgr-book-select">
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mgr-table-scroll">
+                        <table class="mgr-table" id="team-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Department</th>
+                                    <th>This Yr Allow.</th>
+                                    <th>This Yr Taken</th>
+                                    <th>This Yr Left</th>
+                                    <th>Next Yr Allow.</th>
+                                    <th>Next Yr Booked</th>
+                                </tr>
+                            </thead>
+                            <tbody id="team-table-body">
+                                <tr><td colspan="8" class="mgr-table-empty">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
 
         </div>
     </main>
