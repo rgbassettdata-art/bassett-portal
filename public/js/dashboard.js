@@ -63,7 +63,11 @@ function substituteMonday(date) {
 
 function getBankHolidays(year) {
     var dates = [];
-    var fmt = function (d) { return d.toISOString().slice(0, 10); };
+    var fmt = function (d) {
+        return d.getFullYear() + '-' +
+               String(d.getMonth() + 1).padStart(2, '0') + '-' +
+               String(d.getDate()).padStart(2, '0');
+    };
 
     // New Year's Day
     dates.push(fmt(substituteMonday(new Date(year, 0, 1))));
@@ -99,9 +103,11 @@ window.YearCalendar = (function () {
     if (!container) return null;
 
     const today = new Date();
-    let displayYear = today.getFullYear();
-    let highlights  = {}; // { 'YYYY-MM-DD': ['#colour', ...] }
-    let calWorkDays = null; // null = treat Sat/Sun as non-working (default)
+    // Start at the half-year containing today (Jan–Jun or Jul–Dec)
+    let displayYear  = today.getFullYear();
+    let displayMonth = today.getMonth() < 6 ? 0 : 6;
+    let highlights   = {}; // { 'YYYY-MM-DD': ['#colour', ...] }
+    let calWorkDays  = null; // null = treat Sat/Sun as non-working (default)
 
     const MONTH_NAMES = ['January','February','March','April','May','June',
                          'July','August','September','October','November','December'];
@@ -111,18 +117,39 @@ window.YearCalendar = (function () {
         return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     }
 
-    function renderCalendar(year) {
-        if (yearLabel) yearLabel.textContent = year + ' — Full Year Calendar';
-        container.innerHTML = '';
-        var bankHols = getBankHolidays(year);
+    function renderCalendar(startYear, startMonth) {
+        // Compute end month (5 months after start)
+        const endTotalMonth = startMonth + 5;
+        const endYear  = startYear + Math.floor(endTotalMonth / 12);
+        const endMonth = endTotalMonth % 12;
 
-        for (let m = 0; m < 12; m++) {
+        // Build header label
+        if (yearLabel) {
+            if (startYear === endYear) {
+                yearLabel.textContent = MONTH_NAMES[startMonth] + ' – ' + MONTH_NAMES[endMonth] + ' ' + startYear;
+            } else {
+                yearLabel.textContent = MONTH_NAMES[startMonth] + ' ' + startYear + ' – ' + MONTH_NAMES[endMonth] + ' ' + endYear;
+            }
+        }
+
+        container.innerHTML = '';
+        const bankHolsCache = {};
+
+        for (let i = 0; i < 6; i++) {
+            const totalMonth  = startMonth + i;
+            const year        = startYear + Math.floor(totalMonth / 12);
+            const m           = totalMonth % 12;
+
+            if (!bankHolsCache[year]) bankHolsCache[year] = getBankHolidays(year);
+            const bankHols = bankHolsCache[year];
+
             const monthEl = document.createElement('div');
             monthEl.className = 'cal-month';
 
             const nameEl = document.createElement('div');
             nameEl.className = 'cal-month-name';
-            nameEl.textContent = MONTH_NAMES[m];
+            // Show year in the tile when it differs from startYear
+            nameEl.textContent = MONTH_NAMES[m] + (year !== startYear ? ' ' + year : '');
             monthEl.appendChild(nameEl);
 
             const headerEl = document.createElement('div');
@@ -140,7 +167,7 @@ window.YearCalendar = (function () {
             const offset      = (new Date(year, m, 1).getDay() + 6) % 7;
             const daysInMonth = new Date(year, m + 1, 0).getDate();
 
-            for (let i = 0; i < offset; i++) {
+            for (let j = 0; j < offset; j++) {
                 const empty = document.createElement('div');
                 empty.className = 'cal-day empty';
                 empty.textContent = '.';
@@ -148,10 +175,10 @@ window.YearCalendar = (function () {
             }
 
             for (let d = 1; d <= daysInMonth; d++) {
-                const dow          = new Date(year, m, d).getDay();
-                const isNonWork    = calWorkDays ? calWorkDays.indexOf(dow) === -1 : (dow === 0 || dow === 6);
-                const isToday      = d === today.getDate() && m === today.getMonth() && year === today.getFullYear();
-                const isBankHol    = bankHols.has(toKey(year, m, d));
+                const dow       = new Date(year, m, d).getDay();
+                const isNonWork = calWorkDays ? calWorkDays.indexOf(dow) === -1 : (dow === 0 || dow === 6);
+                const isToday   = d === today.getDate() && m === today.getMonth() && year === today.getFullYear();
+                const isBankHol = bankHols.has(toKey(year, m, d));
 
                 const dayEl = document.createElement('div');
                 dayEl.className = 'cal-day' +
@@ -184,25 +211,35 @@ window.YearCalendar = (function () {
         }
     }
 
-    renderCalendar(displayYear);
+    renderCalendar(displayYear, displayMonth);
 
     document.getElementById('cal-prev-year').addEventListener('click', () => {
-        displayYear--;
-        renderCalendar(displayYear);
+        // Go back 6 months
+        displayMonth -= 6;
+        if (displayMonth < 0) {
+            displayMonth += 12;
+            displayYear--;
+        }
+        renderCalendar(displayYear, displayMonth);
     });
     document.getElementById('cal-next-year').addEventListener('click', () => {
-        displayYear++;
-        renderCalendar(displayYear);
+        // Go forward 6 months
+        displayMonth += 6;
+        if (displayMonth >= 12) {
+            displayMonth -= 12;
+            displayYear++;
+        }
+        renderCalendar(displayYear, displayMonth);
     });
 
     return {
         setHighlights: function (h) {
             highlights = h || {};
-            renderCalendar(displayYear);
+            renderCalendar(displayYear, displayMonth);
         },
         setWorkDays: function (wd) {
             calWorkDays = (wd && wd.length > 0) ? wd : null;
-            renderCalendar(displayYear);
+            renderCalendar(displayYear, displayMonth);
         }
     };
 })();

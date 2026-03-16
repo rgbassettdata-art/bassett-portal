@@ -31,7 +31,7 @@
 .mgr-layout {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0;
 }
 
 /* ── Two equal cards side by side ── */
@@ -114,6 +114,10 @@
     height: 3rem;
     background: var(--border);
     flex-shrink: 0;
+}
+
+.mgr-stat--upcoming {
+    min-width: 180px;
 }
 
 /* ── Book form — keep fields in a row ── */
@@ -206,6 +210,10 @@
     color: var(--mid);
     font-size: 0.8rem;
     text-transform: capitalize;
+}
+
+.mgr-row-tables .dash-card {
+    padding-top: 0.5rem;
 }
 
 .mgr-card-header {

@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
@@ -403,7 +404,10 @@ function substituteMonday(date) {
 const bankHolCache = {};
 function getBankHolidays(year) {
   if (bankHolCache[year]) return bankHolCache[year];
-  const fmt = (d) => d.toISOString().slice(0, 10);
+  const fmt = (d) =>
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
   const dates = [];
 
   dates.push(fmt(substituteMonday(new Date(year, 0, 1)))); // New Year's Day
@@ -435,7 +439,9 @@ function workingDayCount(startDate, endDate, workDays, clampYear) {
   const end = new Date(endDate);
   while (d <= end) {
     if (!clampYear || d.getFullYear() === clampYear) {
-      const key = d.toISOString().slice(0, 10);
+      const key = d.getFullYear() + '-' +
+                  String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                  String(d.getDate()).padStart(2, '0');
       if (wds.has(d.getDay()) && !getBankHolidays(d.getFullYear()).has(key)) count++;
     }
     d.setDate(d.getDate() + 1);
@@ -609,6 +615,75 @@ app.post('/login', async (req, res) => {
 
 app.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login.html'));
+});
+
+// ── Password reset ─────────────────────────────────────────────────────────────
+
+// In-memory store: token → { username, expires }
+const passwordResetTokens = new Map();
+
+app.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  const users = loadUsers();
+  const user = users.find((u) => u.email && u.email.toLowerCase() === (email || '').toLowerCase());
+
+  if (user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 60 * 60 * 1000; // 1 hour
+    passwordResetTokens.set(token, { username: user.username, expires });
+
+    const resetUrl = `${req.protocol}://${req.get('host')}/reset-password.html?token=${token}`;
+
+    await sendEmail(
+      user.email,
+      'Password Reset — RG Bassett & Sons Employee Portal',
+      `<p style="font-family:Arial,sans-serif;font-size:14px;color:#333">Hi ${user.username},</p>
+       <p style="font-family:Arial,sans-serif;font-size:14px;color:#333">
+         We received a request to reset your Employee Portal password.
+         Click the button below to set a new password. This link expires in <strong>1 hour</strong>.
+       </p>
+       <p style="text-align:center;margin:32px 0">
+         <a href="${resetUrl}" style="background:#E8780F;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-family:Arial,sans-serif;font-weight:600;font-size:14px">Reset Password</a>
+       </p>
+       <p style="font-family:Arial,sans-serif;font-size:12px;color:#777">
+         If you didn't request this, you can safely ignore this email — your password won't change.<br>
+         Or copy this link into your browser: ${resetUrl}
+       </p>`
+    );
+  }
+
+  // Always show the same message to prevent email enumeration
+  res.redirect('/forgot-password.html?sent=1');
+});
+
+app.post('/reset-password', async (req, res) => {
+  const { token, password, confirmPassword } = req.body;
+  const entry = passwordResetTokens.get(token);
+
+  if (!entry || Date.now() > entry.expires) {
+    return res.redirect('/forgot-password.html?error=' + encodeURIComponent('Reset link has expired or is invalid. Please request a new one.'));
+  }
+
+  if (!password || password.length < 6) {
+    return res.redirect('/reset-password.html?token=' + token + '&error=' + encodeURIComponent('Password must be at least 6 characters.'));
+  }
+
+  if (password !== confirmPassword) {
+    return res.redirect('/reset-password.html?token=' + token + '&error=' + encodeURIComponent('Passwords do not match.'));
+  }
+
+  const users = loadUsers();
+  const idx = users.findIndex((u) => u.username === entry.username);
+  if (idx === -1) {
+    passwordResetTokens.delete(token);
+    return res.redirect('/login.html?error=' + encodeURIComponent('User account not found.'));
+  }
+
+  users[idx].password = await bcrypt.hash(password, 10);
+  saveUsers(users);
+  passwordResetTokens.delete(token);
+
+  res.redirect('/login.html?message=' + encodeURIComponent('Password reset successfully. Please sign in with your new password.'));
 });
 
 // ── User management (admin) ───────────────────────────────────────────────────

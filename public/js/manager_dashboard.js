@@ -95,7 +95,7 @@
         allUsers.forEach(function (u) { if (u.department) deptSet[u.department] = true; });
         var depts = Object.keys(deptSet).sort();
         var current = sel.value;
-        sel.innerHTML = '<option value="">All</option>';
+        sel.innerHTML = '<option value="">None</option>';
         depts.forEach(function (d) {
             var opt = document.createElement('option');
             opt.value = d;
@@ -110,7 +110,7 @@
         var filter = sel ? sel.value : '';
         var users  = filter
             ? allUsers.filter(function (u) { return u.department === filter; })
-            : allUsers.slice();
+            : [];
         users.sort(function (a, b) {
             return (a.username || '').toLowerCase().localeCompare((b.username || '').toLowerCase());
         });
@@ -377,8 +377,52 @@
     function loadMyRequests() {
         fetch('/holiday-requests/mine')
             .then(function (r) { return r.json(); })
-            .then(function (reqs) { renderMyRequests(reqs); })
+            .then(function (reqs) {
+                renderMyRequests(reqs);
+                renderMgrUpcoming(reqs);
+            })
             .catch(function () {});
+    }
+
+    function renderMgrUpcoming(reqs) {
+        var el = document.getElementById('mgr-upcoming-holidays');
+        if (!el) return;
+        var today = new Date().toISOString().slice(0, 10);
+        var statusColour = { pending: '#e8a020', approved: '#25764A', declined: '#c0392b' };
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+        function fmt(s) {
+            if (!s) return '—';
+            var p = s.split('-');
+            return p[2] + ' ' + months[parseInt(p[1], 10) - 1];
+        }
+
+        var upcoming = reqs
+            .filter(function (r) { return r.startDate >= today && (r.status === 'approved' || r.status === 'pending'); })
+            .sort(function (a, b) { return a.startDate.localeCompare(b.startDate); })
+            .slice(0, 3);
+
+        if (upcoming.length === 0) {
+            el.innerHTML = '<span class="upcoming-none">No upcoming holidays</span>';
+            return;
+        }
+
+        el.innerHTML = upcoming.map(function (r) {
+            var c = statusColour[r.status] || '#888';
+            var sameMonth = r.startDate.slice(0, 7) === r.endDate.slice(0, 7);
+            var dateStr = sameMonth
+                ? fmt(r.startDate) + ' – ' + r.endDate.split('-')[2]
+                : fmt(r.startDate) + ' – ' + fmt(r.endDate);
+            return '<div class="upcoming-item">' +
+                '<span class="upcoming-dot" style="background:' + c + '"></span>' +
+                '<div>' +
+                  '<div class="upcoming-dates">' + dateStr + '</div>' +
+                  '<div class="upcoming-days">' + r.days + ' day' + (r.days !== 1 ? 's' : '') +
+                    ' &nbsp;<span class="upcoming-status" style="background:' + c + '22;color:' + c + '">' + r.status + '</span>' +
+                  '</div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
     }
 
     function renderMyRequests(reqs) {

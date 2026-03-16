@@ -167,6 +167,12 @@ body {
     padding-left: 1.4rem;
 }
 
+.dash-links-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.25rem 0;
+}
+
 .dash-logout button {
     background: transparent;
     border: 1.5px solid rgba(255, 255, 255, 0.28);
@@ -455,7 +461,7 @@ body {
 .dash-quick-actions {
     display: flex;
     gap: 0.75rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     flex-wrap: wrap;
 }
 
@@ -552,12 +558,12 @@ body {
 
 .year-calendar-grid {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     background: #fff;
 }
 
 .cal-month {
-    padding: 1rem 0.6rem 1.2rem;
+    padding: 1.25rem 1rem 1.5rem;
     border-right: 1px solid var(--border);
 }
 
@@ -566,48 +572,48 @@ body {
 }
 
 .cal-month-name {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--navy);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.75rem;
     text-align: center;
 }
 
 .cal-days-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
 }
 
 .cal-days-header span {
-    font-size: 0.5rem;
+    font-size: 0.65rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--mid);
     text-align: center;
-    padding: 0.1rem 0;
+    padding: 0.15rem 0;
 }
 
 .cal-days-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
+    gap: 2px;
 }
 
 .cal-day {
-    font-size: 0.55rem;
+    font-size: 0.72rem;
     text-align: center;
-    padding: 0.22rem 0.1rem 0.15rem;
+    padding: 0.3rem 0.1rem 0.2rem;
     color: var(--dark);
     line-height: 1;
-    border-radius: 2px;
+    border-radius: 3px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1px;
+    gap: 2px;
 }
 
 .cal-day-num {
@@ -616,14 +622,14 @@ body {
 
 .cal-day-dots {
     display: flex;
-    gap: 1px;
+    gap: 2px;
     justify-content: center;
 }
 
 .cal-day-dots span {
     display: inline-block;
-    width: 3px;
-    height: 3px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -666,6 +672,7 @@ body {
 
 .req-section-drawer.open {
     max-height: 2000px;
+    margin-bottom: 1.25rem;
 }
 
 /* Filter row above the table */
@@ -976,15 +983,15 @@ body {
 /* ─────────────────────────────────────────
    Responsive
 ───────────────────────────────────────── */
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
     .year-calendar-grid {
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 500px) {
     .year-calendar-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
