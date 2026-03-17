@@ -269,6 +269,12 @@
         transparent 7px
     );
 }
+.hm-ls-half {
+    background: linear-gradient(to bottom, #4A90D9 50%, #F6F4EF 50%);
+    border: 1px solid rgba(74,144,217,0.4);
+    border-radius: 2px;
+}
+
 .hm-ls-absent {
     background: repeating-linear-gradient(
         45deg,

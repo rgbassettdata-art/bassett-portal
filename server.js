@@ -111,6 +111,11 @@ db.exec(`
   );
 `);
 
+// ── Schema migrations (add columns that may not exist yet) ────────────────────
+try { db.prepare('ALTER TABLE holiday_requests ADD COLUMN halfDay INTEGER DEFAULT 0').run(); } catch (_) {}
+// Fix any existing requests stored with days=0.5 before halfDay column existed
+try { db.prepare('UPDATE holiday_requests SET halfDay = 1 WHERE days = 0.5 AND halfDay = 0').run(); } catch (_) {}
+
 // ── One-time migration from JSON files ────────────────────────────────────────
 
 function migrateFromJSON() {
@@ -283,8 +288,8 @@ function saveRequests(reqs) {
   db.transaction(() => {
     db.prepare('DELETE FROM holiday_requests').run();
     const ins = db.prepare(`INSERT INTO holiday_requests
-      (id,username,bookedBy,startDate,endDate,days,status,requestedAt,decidedBy,decidedAt,cancelledBy,cancelledAt,amendedBy,amendedAt,removedBy,removedAt)
-      VALUES (@id,@username,@bookedBy,@startDate,@endDate,@days,@status,@requestedAt,@decidedBy,@decidedAt,@cancelledBy,@cancelledAt,@amendedBy,@amendedAt,@removedBy,@removedAt)`);
+      (id,username,bookedBy,startDate,endDate,days,halfDay,status,requestedAt,decidedBy,decidedAt,cancelledBy,cancelledAt,amendedBy,amendedAt,removedBy,removedAt)
+      VALUES (@id,@username,@bookedBy,@startDate,@endDate,@days,@halfDay,@status,@requestedAt,@decidedBy,@decidedAt,@cancelledBy,@cancelledAt,@amendedBy,@amendedAt,@removedBy,@removedAt)`);
     for (const r of reqs) {
       ins.run({
         id:          r.id,
@@ -293,6 +298,7 @@ function saveRequests(reqs) {
         startDate:   r.startDate,
         endDate:     r.endDate,
         days:        r.days        ?? null,
+        halfDay:     r.halfDay     ? 1 : 0,
         status:      r.status,
         requestedAt: r.requestedAt ?? null,
         decidedBy:   r.decidedBy   ?? null,
@@ -453,7 +459,9 @@ function workingDayCount(startDate, endDate, workDays, clampYear) {
 function calcTakenForYear(username, year, allReqs, workDays) {
   return allReqs
     .filter(r => r.username === username && r.status === 'approved')
-    .reduce((sum, r) => sum + workingDayCount(r.startDate, r.endDate, workDays, year), 0);
+    .reduce((sum, r) => sum + (r.halfDay
+      ? (new Date(r.startDate).getFullYear() === year ? (r.days ?? 0.5) : 0)
+      : workingDayCount(r.startDate, r.endDate, workDays, year)), 0);
 }
 
 // If the user's holiday year is behind the current year, carry over unused days and reset.
@@ -744,9 +752,10 @@ app.delete('/user/:username', ensureAdminAccess, (req, res) => {
 
 // Submit a request (any logged-in user; managers may specify targetUsername)
 app.post('/holiday-request', ensureLoggedIn, (req, res) => {
-  const { startDate, endDate, targetUsername } = req.body;
+  const { startDate, endDate, targetUsername, halfDay } = req.body;
   if (!startDate || !endDate) return res.status(400).json({ error: 'Dates required' });
   if (endDate < startDate)   return res.status(400).json({ error: 'End must be on or after start' });
+  if (halfDay && startDate !== endDate) return res.status(400).json({ error: 'Half day must be a single day' });
 
   const { username: sessionUser, role } = req.session.user;
   const allUsers = loadUsers();
@@ -762,12 +771,14 @@ app.post('/holiday-request', ensureLoggedIn, (req, res) => {
   const currentYear = new Date().getFullYear();
   const allReqs = loadRequests();
   const user    = allUsers.find((u) => u.username === forUsername);
-  const days    = workingDayCount(startDate, endDate, user?.workDays, currentYear);
+  const days    = halfDay ? 0.5 : workingDayCount(startDate, endDate, user?.workDays, currentYear);
   const total   = (user?.totalHolidays ?? 28) + (user?.carriedOver ?? 0);
   const taken   = calcTakenForYear(forUsername, currentYear, allReqs, user?.workDays);
   const pending = allReqs
     .filter((r) => r.username === forUsername && r.status === 'pending')
-    .reduce((sum, r) => sum + workingDayCount(r.startDate, r.endDate, user?.workDays, currentYear), 0);
+    .reduce((sum, r) => sum + (r.halfDay
+      ? (new Date(r.startDate).getFullYear() === currentYear ? (r.days ?? 0.5) : 0)
+      : workingDayCount(r.startDate, r.endDate, user?.workDays, currentYear)), 0);
 
   if (days > total - taken - pending)
     return res.status(400).json({ error: 'Insufficient holiday allowance' });
@@ -778,7 +789,8 @@ app.post('/holiday-request', ensureLoggedIn, (req, res) => {
     username: forUsername,
     bookedBy: forUsername !== sessionUser ? sessionUser : undefined,
     startDate, endDate,
-    days: workingDayCount(startDate, endDate, user?.workDays), // total working days for display
+    days: halfDay ? 0.5 : workingDayCount(startDate, endDate, user?.workDays),
+    halfDay: halfDay ? true : undefined,
     status: 'pending',
     requestedAt: new Date().toISOString(),
   });
@@ -1042,6 +1054,8 @@ app.get('/users', ensureManager, (_req, res) => {
     department:       u.department    ?? null,
     colour:           u.colour        ?? '#4A90D9',
     workDays:         u.workDays      ?? [1,2,3,4,5],
+    manager:          u.manager       ?? null,
+    approver:         u.approver      ?? null,
   }));
   res.json(safe);
 });
@@ -1092,7 +1106,7 @@ app.get('/holiday-matrix', ensureLoggedIn, (req, res) => {
   }));
   const requests = allReqs
     .filter(r => teamSet.has(r.username) && (r.status === 'approved' || r.status === 'pending'))
-    .map(r => ({ username: r.username, startDate: r.startDate, endDate: r.endDate, status: r.status }));
+    .map(r => ({ username: r.username, startDate: r.startDate, endDate: r.endDate, status: r.status, halfDay: r.halfDay || false }));
 
   const absences = loadAbsences()
     .filter(a => teamSet.has(a.username))

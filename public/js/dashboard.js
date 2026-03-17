@@ -8,12 +8,13 @@
             const heading = document.getElementById('dash-main-heading');
             if (heading && user.username) heading.textContent = 'Dashboard – ' + user.username;
 
+            const fmtDays = n => (n % 1 === 0 ? n : parseFloat(n.toFixed(1))).toString();
             const total = (user.totalHolidays ?? 28) + (user.carriedOver ?? 0);
             const taken = user.takenHolidays ?? 0;
-            daysLeftEl.textContent = total - taken;
+            daysLeftEl.textContent = fmtDays(total - taken);
 
             const detailEl = document.getElementById('this-year-detail');
-            if (detailEl) detailEl.textContent = taken + ' taken of ' + total;
+            if (detailEl) detailEl.textContent = fmtDays(taken) + ' taken of ' + total;
 
             const nextBookedEl = document.getElementById('next-year-booked');
             const nextDetailEl = document.getElementById('next-year-detail');
@@ -538,18 +539,36 @@ window.MonthCalendar = (function () {
         applyFilters();
     });
 
+    var halfDayCheck = document.getElementById('req-halfday');
+    var endInput     = document.getElementById('req-end');
+    if (halfDayCheck) {
+        halfDayCheck.addEventListener('change', function () {
+            if (this.checked) {
+                var startVal = form.startDate.value;
+                endInput.value    = startVal;
+                endInput.disabled = true;
+            } else {
+                endInput.disabled = false;
+            }
+        });
+        form.startDate && form.elements['startDate'] && form.elements['startDate'].addEventListener('change', function () {
+            if (halfDayCheck.checked) endInput.value = this.value;
+        });
+    }
+
     form.addEventListener('submit', function (e) {
         e.preventDefault();
         var msg       = document.getElementById('request-msg');
         var startDate = form.startDate.value;
         var endDate   = form.endDate.value;
+        var halfDay   = halfDayCheck ? halfDayCheck.checked : false;
         msg.textContent = '';
         msg.className   = 'req-msg';
 
         fetch('/holiday-request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ startDate: startDate, endDate: endDate }),
+            body: JSON.stringify({ startDate: startDate, endDate: endDate, halfDay: halfDay }),
         })
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -557,6 +576,7 @@ window.MonthCalendar = (function () {
                 msg.textContent = 'Request submitted.';
                 msg.className   = 'req-msg req-msg-ok';
                 form.reset();
+                if (endInput) endInput.disabled = false;
                 loadList();
                 if (window.HolidayMatrix) window.HolidayMatrix.reload();
             } else {
@@ -589,4 +609,85 @@ window.MonthCalendar = (function () {
     wrap.querySelector('.dash-links-menu').addEventListener('click', function (e) {
         e.stopPropagation();
     });
+})();
+
+// ── Weather widget (Stoke-on-Trent) ───────────────────────────────────────────
+(function () {
+    var el = document.getElementById('weather-widget');
+    if (!el) return;
+
+    var DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    var WMO = {
+        0:  { label: 'Clear',        icon: '☀' },
+        1:  { label: 'Mainly clear', icon: '🌤' },
+        2:  { label: 'Partly cloudy',icon: '⛅' },
+        3:  { label: 'Overcast',     icon: '☁' },
+        45: { label: 'Foggy',        icon: '🌫' },
+        48: { label: 'Icy fog',      icon: '🌫' },
+        51: { label: 'Light drizzle',icon: '🌦' },
+        53: { label: 'Drizzle',      icon: '🌦' },
+        55: { label: 'Heavy drizzle',icon: '🌦' },
+        61: { label: 'Light rain',   icon: '🌧' },
+        63: { label: 'Rain',         icon: '🌧' },
+        65: { label: 'Heavy rain',   icon: '🌧' },
+        71: { label: 'Light snow',   icon: '🌨' },
+        73: { label: 'Snow',         icon: '🌨' },
+        75: { label: 'Heavy snow',   icon: '❄' },
+        77: { label: 'Snow grains',  icon: '🌨' },
+        80: { label: 'Showers',      icon: '🌦' },
+        81: { label: 'Showers',      icon: '🌧' },
+        82: { label: 'Heavy shower', icon: '🌧' },
+        85: { label: 'Snow shower',  icon: '🌨' },
+        86: { label: 'Heavy snow',   icon: '❄' },
+        95: { label: 'Thunder',      icon: '⛈' },
+        96: { label: 'Thunder+hail', icon: '⛈' },
+        99: { label: 'Thunder+hail', icon: '⛈' }
+    };
+
+    function wmo(code) {
+        return WMO[code] || WMO[Math.floor(code / 10) * 10] || { label: '—', icon: '—' };
+    }
+
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+        '?latitude=53.00&longitude=-2.18' +
+        '&current=temperature_2m,weather_code,wind_speed_10m' +
+        '&daily=weather_code,temperature_2m_max,temperature_2m_min' +
+        '&forecast_days=4&timezone=Europe%2FLondon&wind_speed_unit=mph';
+
+    fetch(url)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            var cur  = d.current;
+            var daily = d.daily;
+            var w = wmo(cur.weather_code);
+
+            var html = '<div class="wx-current">' +
+                '<span class="wx-temp">' + Math.round(cur.temperature_2m) + '°</span>' +
+                '<span class="wx-icon">' + w.icon + '</span>' +
+                '<span class="wx-desc">' + w.label + '</span>' +
+            '</div>' +
+            '<div class="wx-forecast">';
+
+            // Skip today (index 0), show next 3 days
+            for (var i = 1; i <= 3; i++) {
+                var dt  = new Date(daily.time[i] + 'T00:00:00');
+                var day = DAY_ABBR[dt.getDay()];
+                var wi  = wmo(daily.weather_code[i]);
+                html += '<div class="wx-day">' +
+                    '<span class="wx-day-name">' + day + '</span>' +
+                    '<span class="wx-day-icon">' + wi.icon + '</span>' +
+                    '<span class="wx-day-temps">' +
+                        '<b>' + Math.round(daily.temperature_2m_max[i]) + '°</b>' +
+                        '<span>' + Math.round(daily.temperature_2m_min[i]) + '°</span>' +
+                    '</span>' +
+                '</div>';
+            }
+
+            html += '</div>';
+            el.innerHTML = html;
+        })
+        .catch(function () {
+            el.innerHTML = '<span class="holiday-detail">Unavailable</span>';
+        });
 })();

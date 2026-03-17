@@ -676,4 +676,88 @@
     });
 
     loadNewsAdmin();
+
+    // ── Pending Holiday Approvals ─────────────────────────────────────────────
+
+    function fmtDate(s) {
+        if (!s) return '—';
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var p = s.split('-');
+        return p[2] + ' ' + months[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    }
+
+    function loadPendingRequests() {
+        fetch('/admin/holiday-requests')
+            .then(function (r) { return r.json(); })
+            .then(function (reqs) {
+                var pending = reqs.filter(function (r) { return r.status === 'pending'; });
+                var tbody = document.getElementById('pending-requests-tbody');
+                if (!tbody) return;
+                if (pending.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="admin-loading">No pending requests.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                pending.forEach(function (req) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML =
+                        '<td>' + req.username + '</td>' +
+                        '<td>' + fmtDate(req.startDate) + '</td>' +
+                        '<td>' + fmtDate(req.endDate) + '</td>' +
+                        '<td>' + req.days + '</td>' +
+                        '<td>' + fmtDate(req.requestedAt ? req.requestedAt.slice(0, 10) : '') + '</td>' +
+                        '<td class="admin-approve-actions"></td>';
+                    var cell = tr.querySelector('.admin-approve-actions');
+
+                    var approveBtn = document.createElement('button');
+                    approveBtn.textContent = 'Approve';
+                    approveBtn.className = 'admin-btn admin-btn-save admin-btn-sm';
+                    approveBtn.addEventListener('click', function () {
+                        approveBtn.disabled = true;
+                        declineBtn.disabled = true;
+                        fetch('/holiday-request/' + req.id, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'approved' }),
+                        })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data.success) { loadPendingRequests(); loadAudit(); }
+                            else { approveBtn.disabled = false; declineBtn.disabled = false; }
+                        })
+                        .catch(function () { approveBtn.disabled = false; declineBtn.disabled = false; });
+                    });
+
+                    var declineBtn = document.createElement('button');
+                    declineBtn.textContent = 'Decline';
+                    declineBtn.className = 'admin-btn admin-btn-delete admin-btn-sm';
+                    declineBtn.addEventListener('click', function () {
+                        approveBtn.disabled = true;
+                        declineBtn.disabled = true;
+                        fetch('/holiday-request/' + req.id, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'declined' }),
+                        })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data.success) { loadPendingRequests(); loadAudit(); }
+                            else { approveBtn.disabled = false; declineBtn.disabled = false; }
+                        })
+                        .catch(function () { approveBtn.disabled = false; declineBtn.disabled = false; });
+                    });
+
+                    cell.appendChild(approveBtn);
+                    cell.appendChild(declineBtn);
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(function () {
+                var tbody = document.getElementById('pending-requests-tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="admin-loading">Could not load requests.</td></tr>';
+            });
+    }
+
+    loadPendingRequests();
+
 })();

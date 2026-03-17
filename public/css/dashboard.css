@@ -210,10 +210,28 @@ body {
    Main content
 ───────────────────────────────────────── */
 .dash-main {
-    max-width: 1100px;
-    margin: 2.5rem auto;
+    width: 100%;
+    margin: 2.5rem 0;
     padding: 0 1.5rem 3rem;
     animation: pageIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─────────────────────────────────────────
+   Two-column layout
+───────────────────────────────────────── */
+.dash-two-col {
+    display: grid;
+    grid-template-columns: 1fr 520px;
+    gap: 2rem;
+    align-items: start;
+}
+
+.dash-left-col {
+    min-width: 0;
+}
+
+.dash-right-col {
+    min-width: 0;
 }
 
 @keyframes pageIn {
@@ -281,6 +299,20 @@ body {
     gap: 2rem;
 }
 
+/* ── Compact card in left column ── */
+.dash-left-col .dash-card {
+    padding: 1.25rem 1.5rem;
+    width: fit-content;
+}
+
+.dash-left-col .dash-card h2 {
+    margin-bottom: 0.75rem;
+}
+
+.dash-left-col .holiday-stats-row {
+    gap: 1.5rem;
+}
+
 .holiday-stat-divider {
     width: 1px;
     background: var(--border);
@@ -303,7 +335,15 @@ body {
     margin-bottom: 0.2rem;
 }
 
-#days-left,
+#days-left {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--orange);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
 #mgr-days-left {
     font-family: 'Segoe UI', sans-serif;
     font-size: 3.5rem;
@@ -313,7 +353,15 @@ body {
     letter-spacing: -0.02em;
 }
 
-#next-year-booked,
+#next-year-booked {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
 #mgr-next-year-booked {
     font-family: 'Segoe UI', sans-serif;
     font-size: 3.5rem;
@@ -324,9 +372,9 @@ body {
 }
 
 .holiday-sublabel {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--mid);
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
 }
 
 .holiday-detail {
@@ -336,7 +384,85 @@ body {
 }
 
 .holiday-stat--upcoming {
-    flex: 1;
+    flex: 0 1 auto;
+}
+
+.holiday-stat--weather {
+    flex-shrink: 0;
+}
+
+/* ── Weather widget ── */
+.wx-current {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.wx-temp {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.wx-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.wx-desc {
+    font-size: 0.72rem;
+    color: var(--mid);
+    line-height: 1.3;
+    max-width: 64px;
+}
+
+.wx-forecast {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.wx-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    background: var(--off-white);
+    border-radius: 6px;
+    padding: 0.3rem 0.45rem;
+    min-width: 40px;
+}
+
+.wx-day-name {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--mid);
+}
+
+.wx-day-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.wx-day-temps {
+    display: flex;
+    gap: 0.25rem;
+    font-size: 0.68rem;
+    line-height: 1;
+}
+
+.wx-day-temps b {
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.wx-day-temps span {
+    color: var(--mid);
 }
 
 .upcoming-list {
@@ -461,7 +587,8 @@ body {
 .dash-quick-actions {
     display: flex;
     gap: 0.75rem;
-    margin-bottom: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
     flex-wrap: wrap;
 }
 
@@ -765,6 +892,19 @@ body {
     border-color: var(--navy);
 }
 
+/* ── Half-day checkbox field ── */
+.req-field-halfday {
+    justify-content: flex-end;
+    padding-bottom: 0.55rem;
+}
+
+.halfday-check {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--navy);
+}
+
 .req-submit {
     font-family: 'Segoe UI', system-ui, sans-serif;
     font-size: 0.7rem;
@@ -995,6 +1135,19 @@ body {
     }
 }
 
+
+@media (max-width: 1300px) {
+    .dash-two-col {
+        grid-template-columns: 1fr 460px;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 860px) {
+    .dash-two-col {
+        grid-template-columns: 1fr;
+    }
+}
 
 @media (max-width: 580px) {
     .dash-grid {

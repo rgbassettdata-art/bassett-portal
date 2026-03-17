@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/holiday_matrix.css">
     <link rel="stylesheet" href="/css/news_panel.css">
+    <link rel="stylesheet" href="/css/quick_contacts.css">
 </head>
 <body>
 
@@ -68,97 +69,119 @@
     </div>
 
     <main class="dash-main">
-        <div class="dash-greeting">
-            <h1 id="dash-main-heading">Dashboard</h1>
-            <p>Welcome back. Here's your summary for today.</p>
-        </div>
+        <div class="dash-two-col">
 
-        <div class="dash-quick-actions">
-            <button class="dash-qa-btn dash-qa-btn--primary" id="req-drawer-toggle">
-                <span class="dash-qa-icon">+</span> Request Holiday
-            </button>
-        </div>
+            <!-- ── Left column ── -->
+            <div class="dash-left-col">
 
-        <div class="dash-grid" style="grid-template-columns:1fr">
-
-            <section id="holidays" class="dash-card">
-                <h2>Annual Leave</h2>
-                <div class="holiday-stats-row">
-                    <div class="holiday-stat">
-                        <span class="holiday-year-label">This Year</span>
-                        <span id="days-left">—</span>
-                        <span class="holiday-sublabel">days remaining</span>
-                        <span id="this-year-detail" class="holiday-detail"></span>
-                    </div>
-                    <div class="holiday-stat-divider"></div>
-                    <div class="holiday-stat">
-                        <span class="holiday-year-label">Next Year</span>
-                        <span id="next-year-booked">—</span>
-                        <span class="holiday-sublabel">days booked</span>
-                        <span id="next-year-detail" class="holiday-detail"></span>
-                    </div>
-                    <div class="holiday-stat-divider"></div>
-                    <div class="holiday-stat holiday-stat--upcoming">
-                        <span class="holiday-year-label">Upcoming</span>
-                        <div id="upcoming-holidays" class="upcoming-list"><span class="holiday-detail">Loading…</span></div>
-                    </div>
+                <div class="dash-greeting">
+                    <h1 id="dash-main-heading">Dashboard</h1>
+                    <p>Welcome back. Here's your summary for today.</p>
                 </div>
-            </section>
 
-            <div id="admin-zone"></div>
+                <div class="dash-grid" style="grid-template-columns:1fr">
 
-        </div>
+                    <section id="holidays" class="dash-card">
+                        <h2>Annual Leave</h2>
+                        <div class="holiday-stats-row">
+                            <div class="holiday-stat">
+                                <span class="holiday-year-label">This Year</span>
+                                <span id="days-left">—</span>
+                                <span class="holiday-sublabel">days remaining</span>
+                                <span id="this-year-detail" class="holiday-detail"></span>
+                            </div>
+                            <div class="holiday-stat-divider"></div>
+                            <div class="holiday-stat">
+                                <span class="holiday-year-label">Next Year</span>
+                                <span id="next-year-booked">—</span>
+                                <span class="holiday-sublabel">days booked</span>
+                                <span id="next-year-detail" class="holiday-detail"></span>
+                            </div>
+                            <div class="holiday-stat-divider"></div>
+                            <div class="holiday-stat holiday-stat--upcoming">
+                                <span class="holiday-year-label">Upcoming</span>
+                                <div id="upcoming-holidays" class="upcoming-list"><span class="holiday-detail">Loading…</span></div>
+                            </div>
+                            <div class="holiday-stat-divider"></div>
+                            <div class="holiday-stat holiday-stat--weather">
+                                <span class="holiday-year-label">Stoke-on-Trent</span>
+                                <div id="weather-widget"><span class="holiday-detail">Loading…</span></div>
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Holiday Request -->
-        <div id="req-section-drawer" class="req-section-drawer">
-        <section class="req-section">
-            <h2 class="req-section-title">New Request</h2>
+                    <div id="admin-zone"></div>
 
-            <form id="holiday-request-form" class="req-form">
-                <div class="req-form-row">
-                    <div class="req-field">
-                        <label for="req-start">From</label>
-                        <input id="req-start" name="startDate" type="date" required />
+                </div>
+
+                <div class="dash-quick-actions">
+                    <button class="dash-qa-btn dash-qa-btn--primary" id="req-drawer-toggle">
+                        <span class="dash-qa-icon">+</span> Request Holiday
+                    </button>
+                </div>
+
+                <!-- Holiday Request Drawer -->
+                <div id="req-section-drawer" class="req-section-drawer">
+                <section class="req-section">
+                    <h2 class="req-section-title">New Request</h2>
+
+                    <form id="holiday-request-form" class="req-form">
+                        <div class="req-form-row">
+                            <div class="req-field">
+                                <label for="req-start">From</label>
+                                <input id="req-start" name="startDate" type="date" required />
+                            </div>
+                            <div class="req-field">
+                                <label for="req-end">To</label>
+                                <input id="req-end" name="endDate" type="date" required />
+                            </div>
+                            <div class="req-field req-field-halfday">
+                                <label for="req-halfday">Half Day</label>
+                                <input id="req-halfday" name="halfDay" type="checkbox" class="halfday-check" />
+                            </div>
+                            <button type="submit" class="req-submit">Submit Request</button>
+                        </div>
+                        <p id="request-msg" class="req-msg"></p>
+                    </form>
+
+                    <div class="req-filter-row">
+                        <h2 class="req-section-title" style="margin-bottom:0;align-self:center;">My Requests</h2>
+                        <div class="req-field">
+                            <label for="filter-from">From</label>
+                            <input id="filter-from" type="date" />
+                        </div>
+                        <div class="req-field">
+                            <label for="filter-to">To</label>
+                            <input id="filter-to" type="date" />
+                        </div>
+                        <button type="button" id="filter-clear-btn" class="req-filter-clear-btn">Clear</button>
                     </div>
-                    <div class="req-field">
-                        <label for="req-end">To</label>
-                        <input id="req-end" name="endDate" type="date" required />
-                    </div>
-                    <button type="submit" class="req-submit">Submit Request</button>
-                </div>
-                <p id="request-msg" class="req-msg"></p>
-            </form>
 
-            <div class="req-filter-row">
-                <h2 class="req-section-title" style="margin-bottom:0;align-self:center;">My Requests</h2>
-                <div class="req-field">
-                    <label for="filter-from">From</label>
-                    <input id="filter-from" type="date" />
+                    <table class="req-table">
+                        <thead>
+                            <tr>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="request-list-body">
+                            <tr><td colspan="5" class="req-empty">Loading…</td></tr>
+                        </tbody>
+                    </table>
+                </section>
                 </div>
-                <div class="req-field">
-                    <label for="filter-to">To</label>
-                    <input id="filter-to" type="date" />
-                </div>
-                <button type="button" id="filter-clear-btn" class="req-filter-clear-btn">Clear</button>
+
+            </div><!-- /dash-left-col -->
+
+            <!-- ── Right column ── -->
+            <div class="dash-right-col">
+                <div id="quick-contacts-panel" class="qc-panel"></div>
             </div>
 
-            <table class="req-table">
-                <thead>
-                    <tr>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>Days</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="request-list-body">
-                    <tr><td colspan="5" class="req-empty">Loading…</td></tr>
-                </tbody>
-            </table>
-        </section>
-        </div>
-
+        </div><!-- /dash-two-col -->
     </main>
 
     <section id="holiday-matrix-section" class="hm-section"></section>
@@ -175,5 +198,6 @@
     <script src="/js/dashboard.js"></script>
     <script src="/js/holiday_matrix.js"></script>
     <script src="/js/news_panel.js"></script>
+    <script src="/js/quick_contacts.js"></script>
 </body>
 </html>

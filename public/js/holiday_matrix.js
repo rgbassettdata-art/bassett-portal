@@ -29,7 +29,7 @@
             while (d <= end) {
                 var key = d.toISOString().slice(0, 10);
                 if (!map[r.username][key] || r.status === 'approved') {
-                    map[r.username][key] = r.status;
+                    map[r.username][key] = { status: r.status, halfDay: !!r.halfDay };
                 }
                 d.setDate(d.getDate() + 1);
             }
@@ -124,6 +124,7 @@
         legend.className = 'hm-legend';
         legend.innerHTML =
             '<span class="hm-legend-item"><span class="hm-legend-swatch hm-ls-approved"></span>Approved</span>' +
+            '<span class="hm-legend-item"><span class="hm-legend-swatch hm-ls-half"></span>Half Day</span>' +
             '<span class="hm-legend-item"><span class="hm-legend-swatch hm-ls-pending"></span>Pending</span>' +
             '<span class="hm-legend-item"><span class="hm-legend-swatch hm-ls-absent"></span>Absent</span>';
 
@@ -219,8 +220,10 @@
                     var isWknd2 = dow2 === 0 || dow2 === 6;
                     var isBk2   = bankHols.has(toKey(displayYear, displayMonth, d));
                     var isTdy2  = d === today.getDate() && displayMonth === today.getMonth() && displayYear === today.getFullYear();
-                    var dKey    = toKey(displayYear, displayMonth, d);
-                    var status  = uMap[dKey];
+                    var dKey     = toKey(displayYear, displayMonth, d);
+                    var entry    = uMap[dKey];
+                    var status   = entry && entry.status;
+                    var isHalf   = entry && entry.halfDay;
                     var isAbsent = !!uAbsMap[dKey];
 
                     var isNonWork2 = u.workDays ? u.workDays.indexOf(dow2) === -1 : (dow2 === 0 || dow2 === 6);
@@ -233,7 +236,9 @@
                         (!isNonWork2 && isAbsent && !status      ? ' hm-absent'      : '');
 
                     if (!isNonWork2 && status) {
-                        td.style.background = u.colour;
+                        td.style.background = isHalf
+                            ? 'linear-gradient(to bottom, ' + u.colour + ' 50%, #F6F4EF 50%)'
+                            : u.colour;
                     }
 
                     tr.appendChild(td);

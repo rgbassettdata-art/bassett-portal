@@ -68,6 +68,14 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Top row: Create User + Approve Holiday side by side ── */
+.admin-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+}
+
 /* ── Section ── */
 .admin-section {
     background: #fff;
@@ -205,6 +213,17 @@ body {
 .admin-btn-delete:hover {
     background: var(--red);
     color: #fff;
+}
+
+/* ── Small button variant ── */
+.admin-btn-sm {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.65rem;
+}
+
+.admin-approve-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 /* ── Message ── */

@@ -33,34 +33,61 @@
 
     <main class="admin-main">
 
-        <!-- Create User -->
-        <section class="admin-section">
-            <h2 class="admin-section-title">Create User</h2>
-            <form id="create-user-form" class="admin-create-form" autocomplete="off">
-                <div class="admin-form-row">
-                    <div class="admin-field">
-                        <label for="new-username">Username</label>
-                        <input id="new-username" name="username" type="text" required />
+        <!-- Create User + Approve Holiday row -->
+        <div class="admin-top-row">
+
+            <!-- Create User -->
+            <section class="admin-section">
+                <h2 class="admin-section-title">Create User</h2>
+                <form id="create-user-form" class="admin-create-form" autocomplete="off">
+                    <div class="admin-form-row">
+                        <div class="admin-field">
+                            <label for="new-username">Username</label>
+                            <input id="new-username" name="username" type="text" required />
+                        </div>
+                        <div class="admin-field">
+                            <label for="new-password">Password</label>
+                            <input id="new-password" name="password" type="password" required />
+                        </div>
+                        <div class="admin-field">
+                            <label for="new-role">Role</label>
+                            <select id="new-role" name="role">
+                                <option value="employee">Employee</option>
+                                <option value="manager">Manager</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="admin-field admin-field-action">
+                            <button type="submit" class="admin-btn admin-btn-create">Create User</button>
+                        </div>
                     </div>
-                    <div class="admin-field">
-                        <label for="new-password">Password</label>
-                        <input id="new-password" name="password" type="password" required />
-                    </div>
-                    <div class="admin-field">
-                        <label for="new-role">Role</label>
-                        <select id="new-role" name="role">
-                            <option value="employee">Employee</option>
-                            <option value="manager">Manager</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    <div class="admin-field admin-field-action">
-                        <button type="submit" class="admin-btn admin-btn-create">Create User</button>
-                    </div>
+                    <p id="create-msg" class="admin-msg"></p>
+                </form>
+            </section>
+
+            <!-- Approve Holiday -->
+            <section class="admin-section">
+                <h2 class="admin-section-title">Approve Holiday</h2>
+                <div class="admin-table-wrap">
+                    <table class="admin-table" id="pending-requests-table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Days</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pending-requests-tbody">
+                            <tr><td colspan="6" class="admin-loading">Loading…</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-                <p id="create-msg" class="admin-msg"></p>
-            </form>
-        </section>
+            </section>
+
+        </div>
 
         <!-- Manage Users -->
         <section class="admin-section">

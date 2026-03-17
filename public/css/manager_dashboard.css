@@ -2,6 +2,11 @@
    Manager Dashboard overrides & additions
 ───────────────────────────────────────── */
 
+.mgr-main .dash-quick-actions {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+}
+
 .mgr-header {
     border-bottom-color: var(--green);
 }
@@ -45,7 +50,7 @@
 /* ── Leave Requests + Team Members row (scrollable tables) ── */
 .mgr-row-tables {
     display: grid;
-    grid-template-columns: 2fr 3fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1.25rem;
     align-items: start;
 }

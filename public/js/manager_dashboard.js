@@ -11,10 +11,10 @@
             var taken = user.takenHolidays ?? 0;
 
             var daysLeftEl = document.getElementById('mgr-days-left');
-            if (daysLeftEl) daysLeftEl.textContent = total - taken;
+            if (daysLeftEl) daysLeftEl.textContent = fmtDays(total - taken);
 
             var detailEl = document.getElementById('mgr-this-year-detail');
-            if (detailEl) detailEl.textContent = taken + ' taken of ' + total;
+            if (detailEl) detailEl.textContent = fmtDays(taken) + ' taken of ' + total;
 
             var nextBookedEl = document.getElementById('mgr-next-year-booked');
             if (nextBookedEl) nextBookedEl.textContent = user.nextYearTaken ?? 0;
@@ -28,6 +28,8 @@
         .catch(function () {});
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+    function fmtDays(n) { return (n % 1 === 0 ? n : parseFloat(n.toFixed(1))).toString(); }
+
     function statusBadge(s) {
         var map = { pending: '#e8a020', approved: '#25764A', declined: '#c0392b' };
         var c   = map[s] || '#888';
@@ -63,24 +65,29 @@
     }
 
     // ── Load team + approved holidays ─────────────────────────────────────────
-    var allUsers   = [];
+    var allUsers    = [];
     var allApproved = [];
+    var myTeam      = [];
 
     function loadTeam() {
         Promise.all([
             fetch('/users').then(function (r) { return r.json(); }),
             fetch('/holiday-requests/approved').then(function (r) { return r.json(); }),
+            fetch('/session').then(function (r) { return r.json(); }),
         ]).then(function (results) {
             allUsers    = results[0];
             allApproved = results[1];
+            var me = results[2].username;
 
-            document.getElementById('stat-headcount').textContent = allUsers.length;
+            myTeam = allUsers.filter(function (u) { return u.manager === me || u.approver === me; });
+            var myTeamNames = new Set(myTeam.map(function (u) { return u.username; }));
+            document.getElementById('stat-headcount').textContent = myTeam.length;
 
             var today   = new Date().toISOString().slice(0, 10);
-            var onLeave = allApproved.filter(function (req) {
-                return req.startDate <= today && req.endDate >= today;
-            });
-            document.getElementById('stat-on-leave').textContent = onLeave.length;
+            var onLeaveUsers = new Set(allApproved.filter(function (req) {
+                return myTeamNames.has(req.username) && req.startDate <= today && req.endDate >= today;
+            }).map(function (req) { return req.username; }));
+            document.getElementById('stat-on-leave').textContent = onLeaveUsers.size;
 
             applyCalendarHighlights(allApproved);
             populateTeamDeptFilter();
@@ -92,10 +99,10 @@
         var sel = document.getElementById('team-dept-filter');
         if (!sel) return;
         var deptSet = {};
-        allUsers.forEach(function (u) { if (u.department) deptSet[u.department] = true; });
+        myTeam.forEach(function (u) { if (u.department) deptSet[u.department] = true; });
         var depts = Object.keys(deptSet).sort();
         var current = sel.value;
-        sel.innerHTML = '<option value="">None</option>';
+        sel.innerHTML = '<option value="">All</option>';
         depts.forEach(function (d) {
             var opt = document.createElement('option');
             opt.value = d;
@@ -109,8 +116,8 @@
         var sel    = document.getElementById('team-dept-filter');
         var filter = sel ? sel.value : '';
         var users  = filter
-            ? allUsers.filter(function (u) { return u.department === filter; })
-            : [];
+            ? myTeam.filter(function (u) { return u.department === filter; })
+            : myTeam.slice();
         users.sort(function (a, b) {
             return (a.username || '').toLowerCase().localeCompare((b.username || '').toLowerCase());
         });
@@ -138,10 +145,10 @@
                 '<td>' + u.role                           + '</td>' +
                 '<td>' + (u.department || '—')            + '</td>' +
                 '<td>' + total                            + '</td>' +
-                '<td>' + taken                            + '</td>' +
-                '<td>' + (total - taken)                  + '</td>' +
+                '<td>' + fmtDays(taken)                   + '</td>' +
+                '<td>' + fmtDays(total - taken)           + '</td>' +
                 '<td>' + nextAllow                        + '</td>' +
-                '<td>' + nextBooked                       + '</td>';
+                '<td>' + fmtDays(nextBooked)              + '</td>';
             tbody.appendChild(tr);
         });
     }
@@ -331,18 +338,36 @@
         });
     }
 
+    var bookHalfDay = document.getElementById('book-halfday');
+    var bookEndInp  = document.getElementById('book-end');
+    var bookStartInp = document.getElementById('book-start');
+    if (bookHalfDay) {
+        bookHalfDay.addEventListener('change', function () {
+            if (this.checked) {
+                bookEndInp.value    = bookStartInp.value;
+                bookEndInp.disabled = true;
+            } else {
+                bookEndInp.disabled = false;
+            }
+        });
+        bookStartInp && bookStartInp.addEventListener('change', function () {
+            if (bookHalfDay.checked) bookEndInp.value = this.value;
+        });
+    }
+
     var bookSubmit = document.getElementById('book-submit');
     if (bookSubmit) {
         bookSubmit.addEventListener('click', function () {
-            var sel   = document.getElementById('book-for');
-            var start = document.getElementById('book-start').value;
-            var end   = document.getElementById('book-end').value;
-            var msg   = document.getElementById('book-msg');
+            var sel     = document.getElementById('book-for');
+            var start   = bookStartInp ? bookStartInp.value : '';
+            var end     = bookEndInp   ? bookEndInp.value   : '';
+            var halfDay = bookHalfDay  ? bookHalfDay.checked : false;
+            var msg     = document.getElementById('book-msg');
             if (!start || !end) { msg.textContent = 'Please select both dates.'; msg.className = 'req-msg req-msg-err'; return; }
             if (end < start)    { msg.textContent = 'End date must be on or after start date.'; msg.className = 'req-msg req-msg-err'; return; }
 
             var forVal = sel ? sel.value : '';
-            var body   = { startDate: start, endDate: end };
+            var body   = { startDate: start, endDate: end, halfDay: halfDay };
             if (forVal) body.targetUsername = forVal;
 
             msg.textContent = 'Booking…';
@@ -358,8 +383,10 @@
                 if (data.success) {
                     msg.textContent = 'Holiday booked successfully.';
                     msg.className = 'req-msg req-msg-ok';
-                    document.getElementById('book-start').value = '';
-                    document.getElementById('book-end').value   = '';
+                    bookStartInp.value = '';
+                    bookEndInp.value   = '';
+                    bookEndInp.disabled = false;
+                    if (bookHalfDay) bookHalfDay.checked = false;
                     loadRequests();
                     loadMyRequests();
                     loadTeam();
