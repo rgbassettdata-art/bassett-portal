@@ -221,12 +221,16 @@ body {
 ───────────────────────────────────────── */
 .dash-two-col {
     display: grid;
-    grid-template-columns: 1fr 520px;
+    grid-template-columns: 1fr 260px 520px;
     gap: 2rem;
     align-items: start;
 }
 
 .dash-left-col {
+    min-width: 0;
+}
+
+.dash-mid-col {
     min-width: 0;
 }
 
@@ -1138,14 +1142,39 @@ body {
 
 @media (max-width: 1300px) {
     .dash-two-col {
-        grid-template-columns: 1fr 460px;
+        grid-template-columns: 1fr 240px 460px;
         gap: 1.5rem;
+    }
+}
+
+@media (max-width: 1060px) {
+    .dash-two-col {
+        grid-template-columns: 1fr 460px;
+    }
+    .dash-mid-col {
+        grid-column: 1 / -1;
+        order: 3;
+    }
+    .dash-right-col {
+        order: 2;
+    }
+    .dash-left-col {
+        order: 1;
     }
 }
 
 @media (max-width: 860px) {
     .dash-two-col {
         grid-template-columns: 1fr;
+    }
+    .dash-mid-col {
+        order: unset;
+    }
+    .dash-right-col {
+        order: unset;
+    }
+    .dash-left-col {
+        order: unset;
     }
 }
 

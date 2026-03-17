@@ -97,10 +97,51 @@
         bindCopyButtons();
     }
 
+    // Inline panel (middle column on employee dashboard)
+    const inlineList = document.getElementById('posts-inline-list');
+    const inlineAllBtn = document.getElementById('posts-inline-all-btn');
+    if (inlineAllBtn) inlineAllBtn.addEventListener('click', openPanel);
+
+    function renderInline(posts) {
+        if (!inlineList) return;
+        const top5 = posts.slice(0, 5);
+        if (!top5.length) {
+            inlineList.innerHTML = '<p class="news-empty">No posts yet.</p>';
+            return;
+        }
+        inlineList.innerHTML = top5.map(p => {
+            const links = (p.links || []).map(renderLink).join('');
+            const pin = p.pinned ? '<span class="news-pin">&#128204;</span> ' : '';
+            return `<div class="news-post">
+                <div class="news-post-title">${pin}${esc(p.title)}<span class="news-post-chevron">&#9656;</span></div>
+                <div class="news-post-meta">${fmt(p.createdAt)} &bull; ${esc(p.createdBy)}</div>
+                ${p.body ? `<div class="news-post-body">${esc(p.body)}</div>` : ''}
+                ${links ? `<div class="news-post-links">${links}</div>` : ''}
+            </div>`;
+        }).join('');
+        inlineList.querySelectorAll('.news-post').forEach(post => {
+            post.querySelector('.news-post-title').addEventListener('click', () => {
+                post.classList.toggle('open');
+            });
+        });
+        inlineList.querySelectorAll('.news-link-copy').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const path = btn.dataset.path;
+                navigator.clipboard.writeText(path).then(() => {
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = '&#10003; Copied!';
+                    btn.style.color = 'var(--green)';
+                    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+                }).catch(() => { prompt('Copy this path:', path); });
+            });
+        });
+    }
+
     fetch('/api/news')
         .then(r => r.json())
         .then(posts => {
             render(posts);
+            renderInline(posts);
             const lastSeen = localStorage.getItem('newsLastSeenAt') || '0';
             const newCount = posts.filter(p => p.createdAt && p.createdAt > lastSeen).length;
             if (newCount > 0) {
@@ -108,5 +149,8 @@
                 badge.style.display = 'flex';
             }
         })
-        .catch(() => { list.innerHTML = '<p class="news-empty">Could not load news.</p>'; });
+        .catch(() => {
+            list.innerHTML = '<p class="news-empty">Could not load news.</p>';
+            if (inlineList) inlineList.innerHTML = '<p class="news-empty">Could not load posts.</p>';
+        });
 })();

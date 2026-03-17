@@ -239,6 +239,70 @@
     padding: 0.5rem 0;
 }
 
+/* ── Inline Posts Panel (employee dashboard middle column) ─────────── */
+
+.posts-inline-panel {
+    background: #fff;
+    border-top: 3px solid var(--navy);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06);
+    overflow: hidden;
+    position: sticky;
+    top: 1rem;
+}
+
+.posts-inline-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.1rem;
+    background: var(--navy);
+    border-bottom: 2px solid var(--orange);
+    flex-shrink: 0;
+}
+
+.posts-inline-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--orange);
+}
+
+.posts-inline-all-btn {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.7);
+    padding: 0.25rem 0.65rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.posts-inline-all-btn:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+.posts-inline-body {
+    overflow-y: auto;
+    max-height: 380px;
+    padding: 0 1rem;
+}
+
+.posts-inline-body .news-post {
+    padding: 0.7rem 0;
+}
+
+.posts-inline-body .news-post-title {
+    font-size: 0.82rem;
+}
+
 /* ── Admin: editor panel ───────────────────────────────────────────── */
 
 .news-editor-wrap {
