@@ -6,6 +6,23 @@ const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+
+// ── File upload config ─────────────────────────────────────────────────────────
+const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads', 'news');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const newsUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+    filename:    (_req, file, cb) => {
+      const ext  = path.extname(file.originalname).toLowerCase();
+      const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60);
+      cb(null, Date.now() + '_' + base + ext);
+    },
+  }),
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -115,6 +132,7 @@ db.exec(`
 try { db.prepare('ALTER TABLE holiday_requests ADD COLUMN halfDay INTEGER DEFAULT 0').run(); } catch (_) {}
 // Fix any existing requests stored with days=0.5 before halfDay column existed
 try { db.prepare('UPDATE holiday_requests SET halfDay = 1 WHERE days = 0.5 AND halfDay = 0').run(); } catch (_) {}
+try { db.prepare("ALTER TABLE news_posts ADD COLUMN attachments TEXT DEFAULT '[]'").run(); } catch (_) {}
 
 // ── One-time migration from JSON files ────────────────────────────────────────
 
@@ -1257,33 +1275,67 @@ app.delete('/api/phone-list/entry/:id', ensureAdminAccess, (req, res) => {
 
 app.get('/api/news', ensureLoggedIn, (_req, res) => {
   const posts = db.prepare('SELECT * FROM news_posts ORDER BY pinned DESC, createdAt DESC').all()
-    .map(p => ({ ...p, links: JSON.parse(p.links || '[]'), pinned: Boolean(p.pinned) }));
+    .map(p => ({
+      ...p,
+      links:       JSON.parse(p.links       || '[]'),
+      attachments: JSON.parse(p.attachments || '[]'),
+      pinned: Boolean(p.pinned),
+    }));
   res.json(posts);
 });
 
+app.post('/api/news/upload', ensureAdminAccess, newsUpload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file received' });
+  res.json({
+    url:  '/uploads/news/' + req.file.filename,
+    name: req.file.originalname,
+    size: req.file.size,
+  });
+});
+
+app.delete('/api/news/upload', ensureAdminAccess, (req, res) => {
+  const { filename } = req.body;
+  if (!filename || filename.includes('..') || filename.includes('/')) {
+    return res.status(400).json({ error: 'Invalid filename' });
+  }
+  const filePath = path.join(UPLOADS_DIR, filename);
+  try { fs.unlinkSync(filePath); } catch (_) {}
+  res.json({ success: true });
+});
+
 app.post('/api/news', ensureAdminAccess, (req, res) => {
-  const { title, body, links, pinned } = req.body;
+  const { title, body, links, pinned, attachments } = req.body;
   if (!title) return res.status(400).json({ error: 'Title required' });
   const id = Date.now().toString();
-  db.prepare('INSERT INTO news_posts (id,title,body,links,pinned,createdBy,createdAt,updatedAt) VALUES (?,?,?,?,?,?,?,?)')
-    .run(id, title, body || '', JSON.stringify(links || []), pinned ? 1 : 0, req.session.user.username, new Date().toISOString(), new Date().toISOString());
+  db.prepare('INSERT INTO news_posts (id,title,body,links,pinned,createdBy,createdAt,updatedAt,attachments) VALUES (?,?,?,?,?,?,?,?,?)')
+    .run(id, title, body || '', JSON.stringify(links || []), pinned ? 1 : 0, req.session.user.username, new Date().toISOString(), new Date().toISOString(), JSON.stringify(attachments || []));
   res.json({ success: true, id });
 });
 
 app.patch('/api/news/:id', ensureAdminAccess, (req, res) => {
-  const { title, body, links, pinned } = req.body;
+  const { title, body, links, pinned, attachments } = req.body;
   const post = db.prepare('SELECT id FROM news_posts WHERE id = ?').get(req.params.id);
   if (!post) return res.status(404).json({ error: 'Not found' });
-  if (title   !== undefined) db.prepare('UPDATE news_posts SET title=?, updatedAt=? WHERE id=?').run(title, new Date().toISOString(), req.params.id);
-  if (body    !== undefined) db.prepare('UPDATE news_posts SET body=?,  updatedAt=? WHERE id=?').run(body,  new Date().toISOString(), req.params.id);
-  if (links   !== undefined) db.prepare('UPDATE news_posts SET links=?, updatedAt=? WHERE id=?').run(JSON.stringify(links), new Date().toISOString(), req.params.id);
-  if (pinned  !== undefined) db.prepare('UPDATE news_posts SET pinned=?,updatedAt=? WHERE id=?').run(pinned ? 1 : 0, new Date().toISOString(), req.params.id);
+  if (title       !== undefined) db.prepare('UPDATE news_posts SET title=?,       updatedAt=? WHERE id=?').run(title, new Date().toISOString(), req.params.id);
+  if (body        !== undefined) db.prepare('UPDATE news_posts SET body=?,        updatedAt=? WHERE id=?').run(body,  new Date().toISOString(), req.params.id);
+  if (links       !== undefined) db.prepare('UPDATE news_posts SET links=?,       updatedAt=? WHERE id=?').run(JSON.stringify(links), new Date().toISOString(), req.params.id);
+  if (pinned      !== undefined) db.prepare('UPDATE news_posts SET pinned=?,      updatedAt=? WHERE id=?').run(pinned ? 1 : 0, new Date().toISOString(), req.params.id);
+  if (attachments !== undefined) db.prepare('UPDATE news_posts SET attachments=?, updatedAt=? WHERE id=?').run(JSON.stringify(attachments), new Date().toISOString(), req.params.id);
   res.json({ success: true });
 });
 
 app.delete('/api/news/:id', ensureAdminAccess, (req, res) => {
-  const result = db.prepare('DELETE FROM news_posts WHERE id = ?').run(req.params.id);
-  if (result.changes === 0) return res.status(404).json({ error: 'Not found' });
+  const post = db.prepare('SELECT attachments FROM news_posts WHERE id = ?').get(req.params.id);
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  // Delete uploaded files when the post is deleted
+  try {
+    const attachments = JSON.parse(post.attachments || '[]');
+    attachments.forEach(a => {
+      const filename = path.basename(a.url);
+      try { fs.unlinkSync(path.join(UPLOADS_DIR, filename)); } catch (_) {}
+    });
+  } catch (_) {}
+  db.prepare('DELETE FROM news_posts WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 

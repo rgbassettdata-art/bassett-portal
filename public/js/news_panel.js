@@ -74,21 +74,33 @@
         });
     }
 
+    function renderAttachments(attachments) {
+        if (!attachments || !attachments.length) return '';
+        const items = attachments.map(a =>
+            `<a href="${esc(a.url)}" target="_blank" rel="noreferrer noopener" class="news-attachment-link">&#128206; ${esc(a.name)}</a>`
+        ).join('');
+        return `<div class="news-post-attachments">${items}</div>`;
+    }
+
+    function buildPostHtml(p) {
+        const links = (p.links || []).map(renderLink).join('');
+        const atts  = renderAttachments(p.attachments);
+        const pin   = p.pinned ? '<span class="news-pin">&#128204;</span> ' : '';
+        return `<div class="news-post">
+            <div class="news-post-title">${pin}${esc(p.title)}<span class="news-post-chevron">&#9656;</span></div>
+            <div class="news-post-meta">${fmt(p.createdAt)} &bull; ${esc(p.createdBy)}</div>
+            ${p.body ? `<div class="news-post-body">${esc(p.body)}</div>` : ''}
+            ${links ? `<div class="news-post-links">${links}</div>` : ''}
+            ${atts}
+        </div>`;
+    }
+
     function render(posts) {
         if (!posts.length) {
             list.innerHTML = '<p class="news-empty">No announcements yet.</p>';
             return;
         }
-        list.innerHTML = posts.map(p => {
-            const links = (p.links || []).map(renderLink).join('');
-            const pin = p.pinned ? '<span class="news-pin">&#128204;</span> ' : '';
-            return `<div class="news-post">
-                <div class="news-post-title">${pin}${esc(p.title)}<span class="news-post-chevron">&#9656;</span></div>
-                <div class="news-post-meta">${fmt(p.createdAt)} &bull; ${esc(p.createdBy)}</div>
-                ${p.body ? `<div class="news-post-body">${esc(p.body)}</div>` : ''}
-                ${links ? `<div class="news-post-links">${links}</div>` : ''}
-            </div>`;
-        }).join('');
+        list.innerHTML = posts.map(buildPostHtml).join('');
         list.querySelectorAll('.news-post').forEach(post => {
             post.querySelector('.news-post-title').addEventListener('click', () => {
                 post.classList.toggle('open');
@@ -109,16 +121,7 @@
             inlineList.innerHTML = '<p class="news-empty">No posts yet.</p>';
             return;
         }
-        inlineList.innerHTML = top5.map(p => {
-            const links = (p.links || []).map(renderLink).join('');
-            const pin = p.pinned ? '<span class="news-pin">&#128204;</span> ' : '';
-            return `<div class="news-post">
-                <div class="news-post-title">${pin}${esc(p.title)}<span class="news-post-chevron">&#9656;</span></div>
-                <div class="news-post-meta">${fmt(p.createdAt)} &bull; ${esc(p.createdBy)}</div>
-                ${p.body ? `<div class="news-post-body">${esc(p.body)}</div>` : ''}
-                ${links ? `<div class="news-post-links">${links}</div>` : ''}
-            </div>`;
-        }).join('');
+        inlineList.innerHTML = top5.map(buildPostHtml).join('');
         inlineList.querySelectorAll('.news-post').forEach(post => {
             post.querySelector('.news-post-title').addEventListener('click', () => {
                 post.classList.toggle('open');

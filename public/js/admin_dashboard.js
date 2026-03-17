@@ -535,6 +535,7 @@
 
     let editingNewsId = null;
     let newsLinkCount = 0;
+    let newsAttachments = []; // [{url, name, size}] — confirmed uploads
 
     function esc(s) {
         return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -578,6 +579,58 @@
         }
     }
 
+    function fmtFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderAttachmentItem(att, idx) {
+        const item = document.createElement('div');
+        item.className = 'news-attachment-item';
+        item.dataset.idx = idx;
+        item.innerHTML = `
+            <span class="news-attachment-name" title="${esc(att.name)}">${esc(att.name)}</span>
+            <span class="news-attachment-size">${fmtFileSize(att.size)}</span>
+            <span class="news-attachment-status ok">&#10003;</span>
+            <button type="button" class="news-attachment-remove" title="Remove">&times;</button>`;
+        item.querySelector('.news-attachment-remove').addEventListener('click', () => {
+            newsAttachments.splice(idx, 1);
+            renderAttachmentsList();
+        });
+        return item;
+    }
+
+    function renderAttachmentsList() {
+        const list = document.getElementById('news-attachments-list');
+        list.innerHTML = '';
+        newsAttachments.forEach((att, idx) => list.appendChild(renderAttachmentItem(att, idx)));
+    }
+
+    function uploadFile(file) {
+        const list = document.getElementById('news-attachments-list');
+        // Placeholder item while uploading
+        const item = document.createElement('div');
+        item.className = 'news-attachment-item uploading';
+        item.innerHTML = `<span class="news-attachment-name">${esc(file.name)}</span><span class="news-attachment-status">Uploading…</span>`;
+        list.appendChild(item);
+
+        const fd = new FormData();
+        fd.append('file', file);
+        fetch('/api/news/upload', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                newsAttachments.push({ url: data.url, name: data.name, size: data.size });
+                renderAttachmentsList();
+            })
+            .catch(err => {
+                item.classList.remove('uploading');
+                item.classList.add('error');
+                item.innerHTML = `<span class="news-attachment-name">${esc(file.name)}</span><span class="news-attachment-status err">${esc(err.message || 'Upload failed')}</span>`;
+            });
+    }
+
     function resetNewsForm() {
         editingNewsId = null;
         document.getElementById('news-title').value    = '';
@@ -587,6 +640,8 @@
         document.getElementById('news-submit-btn').textContent = 'Publish Post';
         document.getElementById('news-cancel-btn').style.display = 'none';
         newsLinkCount = 0;
+        newsAttachments = [];
+        renderAttachmentsList();
         setEditorMode(false);
     }
 
@@ -625,6 +680,8 @@
                         document.getElementById('news-links-wrap').innerHTML = '';
                         newsLinkCount = 0;
                         (post.links || []).forEach(l => addLinkRow(l.label, l.url));
+                        newsAttachments = (post.attachments || []).map(a => ({ ...a }));
+                        renderAttachmentsList();
                         document.getElementById('news-submit-btn').textContent = 'Save Changes';
                         document.getElementById('news-cancel-btn').style.display = '';
                         setEditorMode(true, post.title);
@@ -659,7 +716,7 @@
         const links  = getLinks();
         const msg    = document.getElementById('news-msg');
 
-        const payload = { title, body, links, pinned };
+        const payload = { title, body, links, pinned, attachments: newsAttachments.slice() };
         const url     = editingNewsId ? '/api/news/' + editingNewsId : '/api/news';
         const method  = editingNewsId ? 'PATCH' : 'POST';
 
@@ -676,6 +733,33 @@
     });
 
     loadNewsAdmin();
+
+    // ── Attachment drag-and-drop ───────────────────────────────────────────────
+
+    const dropZone   = document.getElementById('news-drop-zone');
+    const fileInput  = document.getElementById('news-file-input');
+
+    if (dropZone && fileInput) {
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        dropZone.addEventListener('dragleave', e => {
+            if (!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('drag-over');
+        });
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            Array.from(e.dataTransfer.files).forEach(uploadFile);
+        });
+        dropZone.addEventListener('click', e => {
+            if (e.target.tagName !== 'LABEL') fileInput.click();
+        });
+        fileInput.addEventListener('change', () => {
+            Array.from(fileInput.files).forEach(uploadFile);
+            fileInput.value = '';
+        });
+    }
 
     // ── Pending Holiday Approvals ─────────────────────────────────────────────
 

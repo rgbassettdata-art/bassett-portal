@@ -303,6 +303,154 @@
     font-size: 0.82rem;
 }
 
+/* ── Post attachments (viewer) ─────────────────────────────────────── */
+
+.news-post-attachments {
+    display: none;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: 0.4rem;
+}
+
+.news-post.open .news-post-attachments {
+    display: flex;
+}
+
+.news-attachment-link {
+    font-size: 0.8rem;
+    color: var(--navy);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.news-attachment-link:hover {
+    text-decoration: underline;
+    color: var(--orange);
+}
+
+/* ── Admin: attachment drop zone ───────────────────────────────────── */
+
+.news-attachments-section {
+    border-top: 1.5px solid var(--border);
+    padding-top: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.news-drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.news-drop-zone.drag-over {
+    border-color: var(--navy);
+    background: rgba(0, 0, 102, 0.04);
+}
+
+.news-drop-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.news-drop-label {
+    font-size: 0.8rem;
+    color: var(--mid);
+}
+
+.news-drop-browse {
+    color: var(--navy);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.news-file-input {
+    display: none;
+}
+
+.news-attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.news-attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.7rem;
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.82rem;
+}
+
+.news-attachment-item.uploading {
+    opacity: 0.6;
+}
+
+.news-attachment-item.error {
+    border-color: #c0392b;
+    background: #fff5f5;
+}
+
+.news-attachment-name {
+    flex: 1;
+    color: var(--dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.news-attachment-size {
+    color: var(--mid);
+    font-size: 0.72rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.news-attachment-status {
+    font-size: 0.72rem;
+    color: var(--mid);
+    flex-shrink: 0;
+}
+
+.news-attachment-status.ok {
+    color: var(--green);
+}
+
+.news-attachment-status.err {
+    color: #c0392b;
+}
+
+.news-attachment-remove {
+    background: transparent;
+    border: none;
+    color: var(--mid);
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0 0.1rem;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.news-attachment-remove:hover {
+    color: #c0392b;
+}
+
 /* ── Admin: editor panel ───────────────────────────────────────────── */
 
 .news-editor-wrap {
